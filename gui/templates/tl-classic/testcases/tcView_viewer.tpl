@@ -18,8 +18,9 @@ viewer for test case in test specification
              show_ghost_string,display_author_updater,onchange_save,
              estimated_execution_duration,status,btn_save,estimated_execution_duration_short,
              requirement,btn_show_exec_history,btn_resequence_steps,link_unlink_requirements,
-             code_mgmt,code_link_tl_to_cts,can_not_edit_frozen_tc,testcase_operations,
-			 testcase_version_operations,goto_execute,"}
+             code_mgmt,code_link_tl_to_cts,can_not_edit_frozen_tc,
+             testcase_operations,testcase_version_operations,
+             goto_execute,aliens"}
 
 {lang_get s='warning_delete_step' var="warning_msg"}
 {lang_get s='delete' var="del_msgbox_title"}
@@ -472,6 +473,25 @@ viewer for test case in test specification
             args_tcase_id=$tcase_id
             args_tcversion_id=$tcversion_id
    } 
+</div>
+
+<p>
+<div {$addInfoDivStyle}>
+   {$alienRW = $args_frozen_version=="no" 
+               && $edit_enabled == 1 
+               && $has_been_executed == 0} 
+   
+   {if $args_frozen_version=="no" && $has_been_executed == 1 }
+     {if $args_tcase_cfg->can_edit_executed == 1 || 
+         $args_tcase_cfg->can_add_remove_kw_on_executed == 1}
+       {$alienRW = 1}
+     {/if}
+   {/if}
+   
+   {include file="{$tplConfig['aliens.inc']}" 
+            args_edit_enabled=$alienRW
+            args_tcase_id=$tcase_id
+            args_tcversion_id=$tcversion_id} 
 </div>
   
 <p>

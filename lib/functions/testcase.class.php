@@ -1050,9 +1050,10 @@ class testcase extends tlObjectWithAttachments {
         $of = array('output' => 'html_options','add_blank' => true);
         $gui->currentVersionFreeKeywords = $this->getFreeKeywords($whoami,$of);
 
-
         $gui->currentVersionFreePlatforms = 
           $this->getFreePlatforms($whoami,$of);
+
+        $gui->currentVersionFreeAliens = $this->getFreeAliens($whoami,$of);
 
 
         if( $my['opt']['getAttachments'] ) {
@@ -1157,6 +1158,9 @@ class testcase extends tlObjectWithAttachments {
 
             $gui->otherVersionsPlatforms[] = 
               $this->getPlatforms($version['testcase_id'],$version['id']);
+
+            $gui->otherVersionsAliens[] = 
+              $this->getAliens($version['testcase_id'],$version['id']);
 
           }
         } // Other versions exist
@@ -9620,6 +9624,106 @@ class testcase extends tlObjectWithAttachments {
     return true;
   }
 
+
+  /**
+   *
+   *
+   */
+  function getFreeAliens($idCard,$opt = null) {
+    $my['opt'] = array('accessKey' => 'alien_id', 'fields' => null, 
+                       'orderBy' => null, 'tproject_id' => null,
+                       'output' => 'std', 'add_blank' => false);
+
+    $my['opt'] = array_merge($my['opt'],(array)$opt);
+
+    $safe = array();
+    foreach($idCard as $key => $val) {
+      $safe[$key] = intval($val);
+    }
+
+    // CRITIC
+    $tproject_id = $my['opt']['tproject_id'];
+    if( null == $tproject_id ) {
+      $tproject_id = $this->get_testproject($safe['tcase_id']);
+    }
+    $tproject_id = intval($tproject_id);
+
+    $sql = " SELECT AL.id AS alien_id, AL.name 
+             FROM {$this->tables['aliens']} AL
+             WHERE AL.testproject_id = {$tproject_id}
+             AND AL.id NOT IN 
+             (
+               SELECT TCAL.alien_id 
+               FROM {$this->tables['testcase_aliens']} TCAL
+               WHERE TCAL.testcase_id = {$safe['tcase_id']}
+               AND TCAL.tcversion_id = {$safe['tcversion_id']}
+             ) ";
+
+    if (!is_null($my['opt']['orderBy'])) {
+      $sql .= ' ' . $my['opt']['orderBy'];
+    }
+
+    switch($my['opt']['output']) {
+      case 'html_options':
+        $items = $this->db->fetchColumnsIntoMap($sql,'alien_id','name');
+        if( null != $items && $my['opt']['add_blank']) {
+          $items = array(0 => '') + $items;
+        }
+
+      break;
+
+      default:
+        $items = $this->db->fetchRowsIntoMap($sql,$my['opt']['accessKey']);
+      break;
+    }
+
+    return $items;
+  }
+
+
+
+  /**
+   *
+   */
+  function getAliens($tcID,$versionID,$alienID = null,$opt = null) {
+    $my['opt'] = array('accessKey' => 'alien_id', 'fields' => null, 
+                       'orderBy' => null);
+
+    $my['opt'] = array_merge($my['opt'],(array)$opt);
+
+    $f2g = is_null($my['opt']['fields']) ?
+           ' TCAL.id AS tcalien_link,alien_id,AL.name,AL.notes,
+             testcase_id,tcversion_id ' :
+           $my['opt']['fields'];
+
+    $sql = " SELECT {$f2g}
+             FROM {$this->tables['testcase_aliens']} TCAL
+             JOIN {$this->tables['aliens']} AL
+             ON alien_id = AL.id ";
+             
+    $sql .=  " WHERE testcase_id = " . intval($tcID) . 
+             " AND tcversion_id=" . intval($versionID);
+
+    if (!is_null($alienID)) {
+      $sql .= " AND alien_id = " . intval($alienID);
+    }
+
+    if (!is_null($my['opt']['orderBy'])) {
+      $sql .= ' ' . $my['opt']['orderBy'];
+    }
+
+    switch( $my['opt']['accessKey'] ) {
+      case 'testcase_id,tcversion_id';
+        $items = $this->db->fetchMapRowsIntoMap($sql,'testcase_id','tcversion_id',database::CUMULATIVE);
+      break;
+
+      default:
+        $items = $this->db->fetchRowsIntoMap($sql,$my['opt']['accessKey']);
+      break;
+    }
+
+    return $items;
+  }
 
 
 

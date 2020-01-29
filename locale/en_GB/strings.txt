@@ -4038,4 +4038,16 @@ $TLS_on_design = 'On Design';
 $TLS_on_exec = 'On Execution';
 $TLS_note_platform_filter = 'Test Cases are filtered by following platforms';
 $TLS_testers_qty = 'Number of testers';
+$TLS_menu_manage_aliens = 'Manage Alien References';
+$TLS_btn_create_alien = 'Create';
+$TLS_th_alien = 'name/code';
+$TLS_btn_assign_alien_to_tc = 'Assign to Test Cases';
+$TLS_link_type = 'Link Type';
+$TLS_realtime = 'Real time';
+$TLS_snapshot = 'Snapshot';
+$TLS_change_to_realtime = 'Snapshot (Click to change to Real time)';
+$TLS_change_to_snapshot = 'Real time (Click to change to Snapshot';
+$TLS_alien = 'Alien References';
+$TLS_aliens = 'Alien References';
+$TLS_select_aliens = 'Select Alien References';
 // ----- END ------------------------------------------------------------------

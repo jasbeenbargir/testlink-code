@@ -185,9 +185,10 @@ class TLSmarty extends Smarty {
     $stdTPLCfg['steps_vertical.inc'] = 'testcases/steps_vertical.inc.tpl';
 
     $stdTPLCfg['platforms.inc'] = 'testcases/platforms.inc.tpl';
+    $stdTPLCfg['aliens.inc'] = 'testcases/aliens.inc.tpl';
 
 
-    // -----------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
     // load configuration
     $this->assign('session',isset($_SESSION) ? $_SESSION : null);
     $this->assign('tlCfg',$tlCfg);
@@ -440,7 +441,10 @@ class TLSmarty extends Smarty {
                    'test_status_passed_next' => $imgLoc . 'test_status_passed_next.png',
                    'test_status_failed_next' => $imgLoc . 'test_status_failed_next.png',
                    'test_status_blocked_next' => $imgLoc . 'test_status_blocked_next.png',
-                   'keyword_add' => $imgLoc . 'tag_blue_add.png');
+                   'keyword_add' => $imgLoc . 'tag_blue_add.png',
+                   'realtime' => $imgLoc . 'television.png',
+                   'snapshot' => $imgLoc . 'camera.png',
+                   'alien_add' => $imgLoc . 'ipod_cast_add.png');
 
     $imi = config_get('images');
     if(count($imi) >0) {
