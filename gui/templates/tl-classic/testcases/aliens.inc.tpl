@@ -96,9 +96,10 @@ var pF_remove_alien = remove_alien;
           {foreach item=tcalien_link_item from=$args_aliens_map}
                 {$tcalien_link_item.name|escape}
             {if $removeEnabled}
-            <a href="javascript:alien_remove_confirmation({$gui->tcase_id},
-                     {$tcalien_link_item.$tcalien_link},
-                     '{$tcalien_link_item.name|escape:'javascript'}', 
+            <a href="javascript:alien_remove_confirmation(
+                     {$gui->tcase_id},
+                     {$tcalien_link_item.tcalien_link},
+                     '{$tcalien_link_item.name|escape:'javascript'}',
                      remove_alien_msgbox_title, remove_alien_msgbox_msg, 
                      pF_remove_alien);">
            <img src="{$tlImages.delete}" title="{$alien_labels.img_title_remove_alien}"  style="border:none" /></a>

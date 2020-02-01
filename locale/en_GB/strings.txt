@@ -4050,4 +4050,9 @@ $TLS_change_to_snapshot = 'Real time (Click to change to Snapshot';
 $TLS_alien = 'Alien References';
 $TLS_aliens = 'Alien References';
 $TLS_select_aliens = 'Select Alien References';
-// ----- END ------------------------------------------------------------------
+
+$TLS_remove_platform_msgbox_title = "Remove Platform";
+$TLS_remove_platform_msgbox_msg = "Really Remove Platform #%i?";
+$TLS_remove_alien_msgbox_title = "Remove Alien Reference";
+$TLS_remove_alien_msgbox_msg = "Really Remove Alien Reference #%i?";
+// ----- END ------------------------------------------------------
