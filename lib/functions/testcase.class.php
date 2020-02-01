@@ -1006,7 +1006,6 @@ class testcase extends tlObjectWithAttachments {
         $gui->delAttachmentURL = $_SESSION['basehref'] . 
           $this->getDeleteAttachmentByIDRelativeURL($io,$gui);
 
-
         $gui->delTCVRelationURL = $_SESSION['basehref'] . 
           $this->getDeleteTCVRelationRelativeURL($io,$gui);
 
@@ -1016,6 +1015,8 @@ class testcase extends tlObjectWithAttachments {
         $gui->delTCVPlatformURL = $_SESSION['basehref'] . 
           $this->getDeleteTCVPlatformRelativeURL($io,$gui);
 
+        $gui->delTCVAlienURL = $_SESSION['basehref'] . 
+          $this->getDeleteTCVAlienRelativeURL($io,$gui);
 
         // Impacted for version management
         $gui->fileUploadURL[$currentVersionID] = 
@@ -1042,6 +1043,9 @@ class testcase extends tlObjectWithAttachments {
 
         $gui->currentVersionPlatforms = 
           $this->getPlatforms($tc_id,$currentVersionID);
+
+        $gui->currentVersionAliens = 
+          $this->getAliens($tc_id,$currentVersionID);
 
 
         $whoami = array('tcase_id' => $tc_id, 
@@ -3339,7 +3343,8 @@ class testcase extends tlObjectWithAttachments {
       return true;
     }
 
-    $safeID = array('tc' => intval($id), 'tcv' => intval($version_id));
+    $safeID = array('tc' => intval($id), 
+                    'tcv' => intval($version_id));
     foreach($safeID as $key => $val ) {
       if($val <= 0) {
         throw new Exception(__METHOD__ . " $key cannot be $val ", 1);
@@ -6932,6 +6937,10 @@ class testcase extends tlObjectWithAttachments {
 
     $goo->view_req_rights = property_exists($grantsObj, 'mgt_view_req') ? $grantsObj->mgt_view_req : 0;
     $goo->assign_keywords = property_exists($grantsObj, 'keyword_assignment') ? $grantsObj->keyword_assignment : 0;
+
+    // Yes keywords right will be used also for aliens
+    $goo->assign_aliens = $goo->assign_keywords;
+
 	  $goo->req_tcase_link_management = property_exists($grantsObj, 'req_tcase_link_management') ? $grantsObj->req_tcase_link_management : 0;
 
     $goo->parentTestSuiteName = '';
@@ -6947,6 +6956,7 @@ class testcase extends tlObjectWithAttachments {
     $goo->tc_current_version = array();
     $goo->status_quo = array();
     $goo->keywords_map = array();
+    $goo->aliens_map = array();
     $goo->arrReqs = array();
 
     $goo->cf_current_version = null;
@@ -6955,14 +6965,20 @@ class testcase extends tlObjectWithAttachments {
     $goo->platforms = null;
     
     // add_relation_feedback_msg @used-by testcaseCommands.class.php:doAddRelation()
-    $viewer_defaults = array('title' => lang_get('title_test_case'),'show_title' => 'no',
-                             'action' => '', 'msg_result' => '','user_feedback' => '',
-                             'refreshTree' => 1, 'disable_edit' => 0,
-                             'display_testproject' => 0,'display_parent_testsuite' => 0,
-                             'hilite_testcase_name' => 0,'show_match_count' => 0,
-                             'add_relation_feedback_msg' => '');
+    $viewer_defaults = 
+      array('title' => lang_get('title_test_case'),
+            'show_title' => 'no',
+            'action' => '', 'msg_result' => '',
+            'user_feedback' => '',
+            'refreshTree' => 1, 'disable_edit' => 0,
+            'display_testproject' => 0,
+            'display_parent_testsuite' => 0,
+            'hilite_testcase_name' => 0,
+            'show_match_count' => 0,
+            'add_relation_feedback_msg' => '');
 
-    $viewer_defaults = array_merge($viewer_defaults, (array)$guiObj->viewerArgs);
+    $viewer_defaults = array_merge($viewer_defaults, 
+                         (array)$guiObj->viewerArgs);
 
     $goo->display_testproject = $viewer_defaults['display_testproject'];
     $goo->display_parent_testsuite = $viewer_defaults['display_parent_testsuite'];
@@ -6984,12 +7000,11 @@ class testcase extends tlObjectWithAttachments {
     $goo->sqlResult = $viewer_defaults['msg_result'];
 
     // fine grain control of operations
-    if( $viewer_defaults['disable_edit'] == 1 || ($grantsObj->mgt_modify_tc == false) )
-    {
+    if( $viewer_defaults['disable_edit'] == 1 
+        || ($grantsObj->mgt_modify_tc == false) ) {
       $goo->show_mode = 'editDisabled';
-    }
-    else if( !is_null($goo->show_mode) && $goo->show_mode == 'editOnExec' )
-    {
+    } else if( !is_null($goo->show_mode) 
+               && $goo->show_mode == 'editOnExec' ) {
       // refers to two javascript functions present in testlink_library.js
       // and logic used to refresh both frames when user call this
       // method to edit a test case while executing it.
@@ -9725,6 +9740,85 @@ class testcase extends tlObjectWithAttachments {
     return $items;
   }
 
+  /**
+   *
+   */
+  function addAliens($idCard,$idSet,$audit=null) {
+
+    $debugMsg = 'Class:' . __CLASS__ . ' - Method: ' . __FUNCTION__;
+
+    $adt = array('on' => self::AUDIT_ON, 'version' => null);
+    $adt = array_merge($adt, (array)$audit);
+
+    if( count($idSet) == 0 ) {
+      return true;
+    }
+
+    $safeID = array('tc' => intval($idCard->tcase_id), 
+                    'tcv' => intval($idCard->tcversion_id));
+    foreach($safeID as $key => $val ) {
+      if($val <= 0) {
+        throw new Exception(__METHOD__ . 
+          " $key cannot be $val ", 1);
+      }
+    } 
+
+    // Firts check if records exist    
+    $sql = "/* $debugMsg */
+            SELECT alien_id FROM 
+            {$this->tables['testcase_aliens']} 
+            WHERE testcase_id = {$safeID['tc']} 
+            AND tcversion_id = {$safeID['tcv']} 
+            AND alien_id IN (" . implode(',',$idSet) . ")";
+
+    $nuCheck = $this->db->fetchRowsIntoMap($sql,'alien_id');
+ 
+    $sql = "/* $debugMsg */" .
+           " INSERT INTO {$this->tables['testcase_aliens']} " .
+           " (testcase_id,tcversion_id,alien_id) VALUES ";
+
+    $dummy = array();
+    foreach( $idSet as $kiwi ) {
+      if( !isset($nuCheck[$kiwi]) ) {
+        $dummy[] = "({$safeID['tc']},{$safeID['tcv']},$kiwi)";
+      }
+    }
+
+    if( count($dummy) <= 0 ) {
+      return;
+    }
+
+    // Go ahead
+    $sql .= implode(',', $dummy);
+    $this->db->exec_query($sql);
+     
+    // Now AUDIT
+    if ( $adt['on'] == self::AUDIT_ON ) {
+      // Audit Context
+      $tcPath = $this->getPathName($safeID['tc']);
+    }
+      
+    return true;
+  }
+
+  /**
+   *
+   */
+  function getDeleteTCVAlienRelativeURL($identity,&$guiObj=null) {
+    $url = "lib/testcases/tcEdit.php?doAction=removeAlien";
+
+    if( null != $guiObj ) {
+      $p2l = array('show_mode','tplan_id');
+      foreach($p2l as $pr) {
+        if( property_exists($guiObj, $pr) ) {
+          $url .= "&$pr=" . $guiObj->$pr;
+        }        
+      }
+    }        
+           
+    $url .= '&tcase_id=%1&tcalien_link_id=%2';
+    return $url;
+  }
 
 
 }  // Class end

@@ -105,8 +105,13 @@ class testcaseCommands {
       $obj->$p2check = !is_null($argsObj->$p2check) ? $argsObj->$p2check : 'show'; 
     }
 
+    $obj->codeTrackerEnabled = $this->tprojectMgr->isCodeTrackerEnabled($this->tproject_id);
+
     // need to check where is used
     $obj->loadOnCancelURL = "archiveData.php?edit=testcase&show_mode={$obj->show_mode}&id=%s&version_id=%s";
+
+    $obj->tcaseMgrURL = 
+      "archiveData.php?edit=testcase&id=%s&caller=%s";
 
     if( property_exists($obj, 'tplan_id') ) {
       $obj->loadOnCancelURL .= "&tplan_id={$obj->tplan_id}";
@@ -114,9 +119,9 @@ class testcaseCommands {
 
     if( property_exists($obj, 'show_mode') ) {
       $obj->loadOnCancelURL .= "&show_mode={$obj->show_mode}";
+      $obj->tcaseMgrURL .= "&show_mode={$obj->show_mode}";
     }
 
-    $obj->codeTrackerEnabled = $this->tprojectMgr->isCodeTrackerEnabled($this->tproject_id);
 
     return $obj;
   }
@@ -1295,7 +1300,8 @@ class testcaseCommands {
     } 
 
     // set up for rendering
-    $guiObj->template = "archiveData.php?edit=testcase&id={$guiObj->tcase_id}&show_mode={$guiObj->show_mode}" . "&caller=removeKeyword";
+    $guiObj->template = 
+      sprintf($guiObj->tcaseMgrURL,$guiObj->tcase_id,__FUNCTION__);
 
     if( property_exists($guiObj, 'tplan_id') ) {
       $guiObj->template .= "&tplan_id={$guiObj->tplan_id}";
@@ -1429,14 +1435,13 @@ class testcaseCommands {
               echo 'Silent Failure?';
             }
           }            
-
-
         }  
       }    
     } 
 
     // set up for rendering
-    $guiObj->template = "archiveData.php?edit=testcase&id={$guiObj->tcase_id}&show_mode={$guiObj->show_mode}" . "&caller=addKeyword";
+    $guiObj->template = 
+      sprintf($guiObj->tcaseMgrURL,$guiObj->tcase_id,__FUNCTION__);
 
     if( property_exists($guiObj, 'tplan_id') ) {
       $guiObj->template .= "&tplan_id={$guiObj->tplan_id}";
@@ -1499,7 +1504,8 @@ class testcaseCommands {
     }
 
     // set up for rendering
-    $guiObj->template = "archiveData.php?edit=testcase&id={$guiObj->tcase_id}&show_mode={$guiObj->show_mode}" . "&caller=addPlatform";
+    $guiObj->template = 
+      sprintf($guiObj->tcaseMgrURL,$guiObj->tcase_id,__FUNCTION__);
 
     if( property_exists($guiObj, 'tplan_id') ) {
       $guiObj->template .= "&tplan_id={$guiObj->tplan_id}";
@@ -1525,9 +1531,7 @@ class testcaseCommands {
 
     // set up for rendering
     $guiObj->template = 
-      "archiveData.php?edit=testcase&id={$guiObj->tcase_id}" .
-      "&show_mode={$guiObj->show_mode}" . 
-      "&caller=removePlatform";
+      sprintf($guiObj->tcaseMgrURL,$guiObj->tcase_id,__FUNCTION__);
 
     if( property_exists($guiObj, 'tplan_id') ) {
       $guiObj->template .= "&tplan_id={$guiObj->tplan_id}";
@@ -1535,8 +1539,54 @@ class testcaseCommands {
     return $guiObj;
   }
 
+  /**
+   * 
+   *
+   */
+  function addAlien(&$argsObj,&$request) {
+    $guiObj = $this->initGuiBean($argsObj);
+    $guiObj->user_feedback = '';
 
+    $this->initTestCaseBasicInfo($argsObj,$guiObj,array('accessByStepID' => false));
 
+    if (null != $argsObj->free_aliens) {
+      $this->tcaseMgr->addAliens($guiObj,$argsObj->free_aliens);
+    }
 
+    // set up for rendering
+    $guiObj->template = 
+      sprintf($guiObj->tcaseMgrURL,$guiObj->tcase_id,'addAlien');
+
+    if( property_exists($guiObj, 'tplan_id') ) {
+      $guiObj->template .= "&tplan_id={$guiObj->tplan_id}";
+    }
+   
+    return $guiObj;
+  }
+
+  /**
+   * 
+   *
+   */
+  function removeAlien(&$argsObj,&$request) {
+    $guiObj = $this->initGuiBean($argsObj);
+    $guiObj->user_feedback = '';
+
+    $this->initTestCaseBasicInfo($argsObj,$guiObj,array('accessByStepID' => false));
+
+    if($argsObj->tcalien_link_id > 0) {
+      $this->tcaseMgr->deleteAlienByLink(
+        $guiObj->tcase_id, $argsObj->tcalien_link_id,testcase::AUDIT_ON);
+    } 
+
+    // set up for rendering
+    $guiObj->template = 
+      sprintf($guiObj->tcaseMgrURL,$guiObj->tcase_id,'removeAlien');
+
+    if( property_exists($guiObj, 'tplan_id') ) {
+      $guiObj->template .= "&tplan_id={$guiObj->tplan_id}";
+    }
+    return $guiObj;
+  }
 
 } // end class  

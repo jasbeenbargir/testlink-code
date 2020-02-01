@@ -88,8 +88,9 @@ var pF_remove_alien = remove_alien;
       </td>
 
 
-      {$removeEnabled = $args_edit_enabled && $gui->assign_aliens &&
-                        $args_frozen_version == "no"}
+      {$removeEnabled = $args_edit_enabled 
+                        && $gui->assign_aliens 
+                        && $args_frozen_version == "no"}
 
       <td style="vertical-align:top;">
           {foreach item=tcalien_link_item from=$args_aliens_map}

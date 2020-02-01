@@ -115,6 +115,7 @@ switch($args->doAction) {
   case "doStepOperationExit":
   case "removePlatform":
   case "addPlatform":
+  case "addAlien":
 
 /*
 var_dump($_REQUEST);
@@ -473,7 +474,7 @@ function init_args(&$cfgObj,$otName,&$tcaseMgr) {
   $cbk = 'changeExecTypeOnSteps';
   $args->applyExecTypeChangeToAllSteps = isset($_REQUEST[$cbk]);
 
-  $k2c = array('free_keywords','free_platforms');
+  $k2c = array('free_keywords','free_platforms','free_aliens');
   foreach ($k2c as $kv) {
     $args->$kv = isset($_REQUEST[$kv]) ? $_REQUEST[$kv] : null;
   }
@@ -671,21 +672,25 @@ function renderGui(&$argsObj,$guiObj,$opObj,$templateCfg,$cfgObj,$editorKeys) {
   //              
   // used to set value of: $guiObj->operation
   //
-  $actionOperation = array('create' => 'doCreate', 'doCreate' => 'doCreate',
-                           'edit' => 'doUpdate','delete' => 'doDelete', 
-                           'createStep' => 'doCreateStep', 
-                           'doCreateStep' => 'doCreateStep',
-                           'doCopyStep' => 'doUpdateStep',
-                           'editStep' => 'doUpdateStep', 
-                           'doUpdateStep' => 'doUpdateStep', 
-                           'doInsertStep' => 'doUpdateStep',
-                           'doUpdateStepAndInsert' => 'doUpdateStep');
+  $actionOperation = 
+    array('create' => 'doCreate', 'doCreate' => 'doCreate',
+          'edit' => 'doUpdate','delete' => 'doDelete', 
+          'createStep' => 'doCreateStep', 
+          'doCreateStep' => 'doCreateStep',
+          'doCopyStep' => 'doUpdateStep',
+          'editStep' => 'doUpdateStep', 
+          'doUpdateStep' => 'doUpdateStep', 
+          'doInsertStep' => 'doUpdateStep',
+          'doUpdateStepAndInsert' => 'doUpdateStep');
 
-  $nak = array('doDelete','doDeleteStep','doReorderSteps','doResequenceSteps',
+  $nak = array('doDelete','doDeleteStep','doReorderSteps',
+               'doResequenceSteps',
                'setImportance','setStatus','setExecutionType', 
-               'setEstimatedExecDuration','doAddRelation','doDeleteRelation',
-               'removeKeyword','freeze','unfreeze','addKeyword',
-               'removePlatform','addPlatform');
+               'setEstimatedExecDuration','doAddRelation',
+               'doDeleteRelation','freeze','unfreeze',
+               'removeKeyword','addKeyword',
+               'removePlatform','addPlatform',
+               'removeAlien','addAlien');
 
   foreach($nak as $ak) {
     $actionOperation[$ak] = '';
@@ -775,6 +780,8 @@ function renderGui(&$argsObj,$guiObj,$opObj,$templateCfg,$cfgObj,$editorKeys) {
     case "unfreeze":        
     case "removePlatform":  
     case "addPlatform":  
+    case "removeAlien":  
+    case "addAlien":  
       $renderType = 'template';
       
       // Document this !!!!

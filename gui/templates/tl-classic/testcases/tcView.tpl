@@ -138,7 +138,9 @@ function jsCallDeleteFile(btn, text, o_id) {
              args_status_quo=$gui->status_quo[idx]
 
              args_keywords_map = $gui->currentVersionKeywords 
-             args_platforms_map = $gui->currentVersionPlatforms 
+             args_platforms_map = $gui->currentVersionPlatforms
+             args_aliens_map = $gui->currentVersionAliens
+
              args_reqs = $gui->req4current_version 
              args_relations = $gui->relations[idx]
 
@@ -266,6 +268,9 @@ function jsCallDeleteFile(btn, text, o_id) {
 
                        args_keywords_map = $gui->otherVersionsKeywords[$tdx] 
                        args_platforms_map = $gui->otherVersionsPlatforms[$tdx] 
+
+                       args_aliens_map = $gui->otherVersionsAliens[$tdx] 
+
 
                        args_reqs = $gui->req4OtherVersions[$tdx]
                        args_relations = $gui->otherVersionsRelations[$tdx]

@@ -4,7 +4,8 @@ TestLink Open Source Project - http://testlink.sourceforge.net/
 *}
 
 {lang_get var='kw_labels' 
-          s='btn_add,img_title_remove_keyword,warning,select_keywords,
+          s='btn_add,img_title_remove_keyword,warning,
+             select_keywords,
              createKW,btn_create_and_link'}
 
 
