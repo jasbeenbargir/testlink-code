@@ -116,12 +116,7 @@ switch($args->doAction) {
   case "removePlatform":
   case "addPlatform":
   case "addAlien":
-
-/*
-var_dump($_REQUEST);
-die();
-    die();
-*/
+  case "removeAlien":
     $op = $commandMgr->$pfn($args,$_REQUEST);
     $doRender = true;
   break;
@@ -462,10 +457,11 @@ function init_args(&$cfgObj,$otName,&$tcaseMgr) {
   $args->keyword_id = isset($_GET['keyword_id']) ? intval($_GET['keyword_id']) : 0;
 
 
-  $args->tckw_link_id = isset($_GET['tckw_link_id']) ? intval($_GET['tckw_link_id']) : 0;
-
- $args->tcplat_link_id = isset($_GET['tcplat_link_id']) ? intval($_GET['tcplat_link_id']) : 0;
-
+  $l2c = array('tckw_','tcpla_','tcalien_');
+  foreach ($l2c as $lk) {
+    $tko = $lk .'link_id';
+    $args->$tko = isset($_GET[$tko]) ? intval($_GET[$tko]) : 0;
+  }
 
   $args->tplan_id = isset($_REQUEST['tplan_id']) ? intval($_REQUEST['tplan_id']) : 0;
   $args->platform_id = isset($_REQUEST['platform_id']) ? intval($_REQUEST['platform_id']) : 0;

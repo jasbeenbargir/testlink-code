@@ -9820,5 +9820,81 @@ class testcase extends tlObjectWithAttachments {
     return $url;
   }
 
+  /**
+   *
+   */
+  function deleteAliensByLink($tcID, $linkID, $audit=null) {
+    
+    $debugMsg = 'Class:' . __CLASS__ . ' - Method: ' . __FUNCTION__;   
+    $safeTCID = intval($tcID); 
+
+    $links = (array)$linkID;
+    $inClause = implode(',',$links);
+
+    $sql = " /* $debugMsg */ 
+             SELECT LT.tcversion_id, LT.alien_id
+             FROM {$this->tables['testcase_aliens']} LT
+             WHERE LT.testcase_id = {$safeTCID}
+             AND LT.id IN ($inClause) ";
+
+    $rs = $this->db->get_recordset($sql);
+    
+    foreach($rs as $link) {
+      $this->deleteAliens($safeTCID, $link['tcversion_id'], 
+        $link['alien_id'],$audit);
+    }  
+  }
+
+  /**
+   *
+   *
+   */
+  function deleteAliens($tcID,$versionID,$alID = null,$audit=null) {
+
+    $sf = new stdClass();
+    $sf->tcase_id = intval($tcID);
+    $sf->tcversion_id = intval($versionID);
+
+    $sql = " DELETE FROM {$this->tables['testcase_aliens']}
+             WHERE testcase_id = $sf->tcase_id 
+             AND tcversion_id = $sf->tcversion_id ";
+
+    $adt = array('on' => self::AUDIT_ON);
+    $adt = array_merge($adt,(array)$audit);
+
+    if (!is_null($alID)) {
+      if(is_array($alID)) {
+          $sql .= " AND alien_id IN (" . implode(',',$alID) . ")";
+      }
+      else {
+          $sql .= " AND alien_id = {$alID}";
+      }
+      $key4log = (array)$alID;
+    }
+    else {
+      $key4log = 
+        array_keys((array)$this->get_aliens_map($sf->tcase_id,
+          $sf->tcversion_id));
+    }
+
+    $result = $this->db->exec_query($sql);
+    
+    /* delay the audit code */
+    if ($result && $adt['on']==self::AUDIT_ON) {
+      $tcInfo = $this->tree_manager->get_node_hierarchy_info($tcID);
+      if ($tcInfo && $key4log) {
+        $et = new tlAlien($this->db);
+        $aliens = $et->getByID($key4log,array('accessKey' => 'id'));
+        foreach($key4log as $key2get) {
+          logAuditEvent(TLS("audit_alien_assignment_removed_tc",
+            $aliens[$key2get]['name'],$tcInfo['name']),
+            "ASSIGN",$sf->tcversion_id,"nodes_hierarchy");
+        }
+      }
+    }
+    /**/
+
+    return $result;
+  }
 
 }  // Class end

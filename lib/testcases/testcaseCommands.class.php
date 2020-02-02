@@ -1575,7 +1575,7 @@ class testcaseCommands {
     $this->initTestCaseBasicInfo($argsObj,$guiObj,array('accessByStepID' => false));
 
     if($argsObj->tcalien_link_id > 0) {
-      $this->tcaseMgr->deleteAlienByLink(
+      $this->tcaseMgr->deleteAliensByLink(
         $guiObj->tcase_id, $argsObj->tcalien_link_id,testcase::AUDIT_ON);
     } 
 
