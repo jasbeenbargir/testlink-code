@@ -173,7 +173,8 @@ class gitlab
   {
     try
     {
-      $item = $this->_get("/projects/".$this->projectId."/issues/$issueID");    
+      $uri = "/projects/" . $this->projectId . "/issues/$issueID";
+      $item = $this->_get($uri);    
       $ret = is_object($item) ? $item : null;
       return $ret;
     }
@@ -192,6 +193,35 @@ class gitlab
     $items = $this->_get("/projects/".$this->projectId."/issues/");
     return $items;
   } 
+
+
+  /**
+   * 
+   *
+   */
+  function getIssueSet($issueSet)
+  {
+    // GET /issues?iids[]=42&iids[]=43
+    try {
+      $uri = "/issues";
+      $first = true;
+      foreach ($issueSet as $iid) {
+        if ($first) {
+          $uri .= "?";
+        } else {
+          $uri .= "&";          
+        }
+        $uri .= "iids[]=$iid";
+      } 
+      $item = $this->_get($uri);    
+      $ret = is_object($item) ? $item : null;
+      return $ret;
+    } catch(Exception $e) {
+      return null;
+    }
+  } 
+
+
 
   // with the help of http://tspycher.com/2011/03/using-the-redmine-api-with-php/
   // public function addIssue($summary, $description)

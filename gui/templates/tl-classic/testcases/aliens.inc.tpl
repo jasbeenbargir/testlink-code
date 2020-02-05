@@ -35,8 +35,8 @@ function alien_remove_confirmation(item_id, tcalien_link_id, alien, title, msg, 
  * 
  *
  */
-function remove_alien(btn, text, item_id, tcalien_link_id) {
-
+function remove_alien(btn, text, item_id, tcalien_link_id) 
+{
   var my_url = "{$gui->delTCVAlienURL}";
   var dummy = my_url.replace('%1',item_id);
   var my_action = dummy.replace('%2',tcalien_link_id);
@@ -54,8 +54,10 @@ var pF_remove_alien = remove_alien;
 <form method="post" id="alf" name="alf" 
   action="{$basehref}lib/testcases/tcEdit.php">
   <input type="hidden" id="alf_doAction" name="doAction" value="removeAlien" />
-  <input type="hidden" name="tcase_id" id="tcase_id" value="{$args_tcase_id}" />
-  <input type="hidden" name="tcversion_id" id="tcversion_id" value="{$args_tcversion_id}" />
+  <input type="hidden" name="tcase_id" id="tcase_id" 
+    value="{$args_tcase_id}" />
+  <input type="hidden" name="tcversion_id" id="tcversion_id"
+    value="{$args_tcversion_id}" />
 
   {if property_exists($gui,'tplan_id') } 
     <input type="hidden" name="tplan_id" value="{$gui->tplan_id}" />
@@ -111,25 +113,25 @@ var pF_remove_alien = remove_alien;
     <tr>
       {$addEnabled = $args_edit_enabled}
       {if $addEnabled && null != $gui->currentVersionFreeAliens} 
-      <td>
-       &nbsp;  
-      <td>
-        <select id="free_aliens" name="free_aliens[]"
-          data-placeholder="{$alien_labels.select_aliens}"
-          class="chosen-add-aliens" multiple="multiple">
-          {html_options options = $gui->currentVersionFreeAliens}
-        </select>
-        <input type="submit" value="{$alien_labels.btn_add}"
-          onclick="doAction.value='addAlien'">
-      </td>  
-
-      <script>
-      jQuery( document ).ready(
-        function() { 
-          jQuery(".chosen-add-aliens").chosen({ width: "75%", allow_single_deselect: true }); 
-        }
-      );
-      </script>  
+        <td>
+          &nbsp;
+        </td>   
+        <td>
+          <select id="free_aliens" name="free_aliens[]"
+            data-placeholder="{$alien_labels.select_aliens}"
+            class="chosen-add-aliens" multiple="multiple">
+            {html_options options = $gui->currentVersionFreeAliens}
+          </select>
+          <input type="submit" value="{$alien_labels.btn_add}"
+            onclick="doAction.value='addAlien'">
+        </td>  
+        <script>
+          jQuery( document ).ready(
+            function() { 
+              jQuery(".chosen-add-aliens").chosen({ width: "75%", allow_single_deselect: true }); 
+            }
+          );
+        </script>  
       {/if}
     </tr>
   </table>  

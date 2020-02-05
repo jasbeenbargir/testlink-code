@@ -1047,7 +1047,6 @@ class testcase extends tlObjectWithAttachments {
         $gui->currentVersionAliens = 
           $this->getAliens($tc_id,$currentVersionID);
 
-
         $whoami = array('tcase_id' => $tc_id, 
                         'tcversion_id' => $currentVersionID);
 
@@ -1185,8 +1184,32 @@ class testcase extends tlObjectWithAttachments {
     $this->initShowGuiActions($gui);
     $tplCfg = templateConfiguration('tcView');
 
+    var_dump($this->tproject_id);
+
+    // Aliens are related to issuetracker
+    $sql = "/* $debugMsg */
+            SELECT issuetracker_id 
+            FROM {$this->tables['testproject_issuetracker']}
+            WHERE testproject_id = $this->tproject_id";
+    $rs = $this->db->get_recordset($sql);
+    
+    if (null != $rs) {
+      $system = new tlIssueTracker($this->db);
+      $repo = $system->getInterfaceObject($this->tproject_id);
+      
+      $oc = array();
+      $rx = &$gui->currentVersionAliens;      
+      foreach ($rx as $ik => $el) {
+        $oc[$el['name']] = $repo->getIssue($el['name']);
+        $rx[$ik]['blob'] = $oc[$el['name']];
+      }
+    }
+    echo '<pre>';
+    var_dump($gui->currentVersionAliens);
+    echo '</pre>';
+
     $smarty->assign('gui',$gui);
-    $smarty->display($tplCfg->template_dir . $tplCfg->default_template);
+    $smarty->display($tplCfg->tpl);
   }
 
 
@@ -7034,7 +7057,9 @@ class testcase extends tlObjectWithAttachments {
     }
 
     $path2root = $this->tree_manager->get_path($id);
-    $goo->tproject_id = $path2root[0]['parent_id'];
+    $goo->tproject_id = intval($path2root[0]['parent_id']);
+    $this->setTestProject($goo->tproject_id);
+
     $info = $this->tproject_mgr->get_by_id($goo->tproject_id);
     $goo->requirementsEnabled = $info['opt']->requirementsEnabled;
 

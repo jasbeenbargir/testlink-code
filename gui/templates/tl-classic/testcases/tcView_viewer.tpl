@@ -492,6 +492,16 @@ viewer for test case in test specification
             args_edit_enabled=$alienRW
             args_tcase_id=$tcase_id
             args_tcversion_id=$tcversion_id} 
+
+  <hr>
+  {include file="testcases/aliens2.inc.tpl"
+            args_edit_enabled=$alienRW
+            args_tcase_id=$tcase_id
+            args_tcversion_id=$tcversion_id
+            args_frozen_version = $args_frozen_version} 
+
+
+
 </div>
   
 <p>

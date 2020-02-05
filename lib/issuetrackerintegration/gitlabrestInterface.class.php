@@ -206,27 +206,30 @@ class gitlabrestInterface extends issueTrackerInterface
    **/
   public function getIssue($issueID)
   {
-    if (!$this->isConnected())
-    {
+    if (!$this->isConnected()) {
       tLog(__METHOD__ . '/Not Connected ', 'ERROR');
       return false;
     }
     
     $issue = null;
-    try
-    {
+    try {
       $jsonObj = $this->APIClient->getIssue((int)$issueID);
       
-      if( !is_null($jsonObj) && is_object($jsonObj))
-      {
+      if (!is_null($jsonObj) && is_object($jsonObj)) {
         $issue = new stdClass();
         $issue->IDHTMLString = "<b>{$issueID} : </b>";
         $issue->statusCode = (string)$jsonObj->iid;
         $issue->statusVerbose = (string)$jsonObj->state;
         $issue->statusHTMLString = "[$issue->statusVerbose] ";
-        $issue->summary = $issue->summaryHTMLString = (string)$jsonObj->title;
-        $issue->gitlabProject = array('name' => (string)$jsonObj->project_id, 
-                                       'id' => (int)$jsonObj->project_id );
+        $issue->summary = $issue->summaryHTMLString = 
+                                     (string)$jsonObj->title;
+
+        $issue->reportedBy = (string)$jsonObj->author->name;
+        $issue->handledBy = (string)$jsonObj->assignee->name;
+
+        $issue->gitlabProject = 
+          array('name' => (string)$jsonObj->project_id, 
+                'id' => (int)$jsonObj->project_id );
                                        
         $issue->isResolved = isset($this->state); 
       }
