@@ -185,7 +185,7 @@ class TLSmarty extends Smarty {
     $stdTPLCfg['steps_vertical.inc'] = 'testcases/steps_vertical.inc.tpl';
 
     $stdTPLCfg['platforms.inc'] = 'testcases/platforms.inc.tpl';
-    $stdTPLCfg['aliens.inc'] = 'testcases/aliens.inc.tpl';
+    $stdTPLCfg['aliens.inc'] = 'testcases/aliens3.inc.tpl';
 
 
     // ------------------------------------------------------------------------

@@ -1056,8 +1056,10 @@ class testcase extends tlObjectWithAttachments {
         $gui->currentVersionFreePlatforms = 
           $this->getFreePlatforms($whoami,$of);
 
+        /*
         $gui->currentVersionFreeAliens = $this->getFreeAliens($whoami,$of);
-
+        */
+        $gui->currentVersionFreeAliens = null;
 
         if( $my['opt']['getAttachments'] ) {
           $gui->attachments[$currentVersionID] = 
@@ -9726,31 +9728,36 @@ class testcase extends tlObjectWithAttachments {
    *
    */
   function getAliens($tcID,$versionID,$alienID = null,$opt = null) {
-    $my['opt'] = array('accessKey' => 'alien_id', 'fields' => null, 
+    $my['opt'] = array('accessKey' => 'alien_id', 
+                       'fields' => null, 
                        'orderBy' => null);
 
     $my['opt'] = array_merge($my['opt'],(array)$opt);
 
     $f2g = is_null($my['opt']['fields']) ?
-           ' TCAL.id AS tcalien_link,alien_id,AL.name,AL.notes,
+           ' TCAL.id AS tcalien_link,alien_id,
              testcase_id,tcversion_id ' :
            $my['opt']['fields'];
 
+    $sfTC = intval($tcID);
+    $sfTCV = intval($versionID);
     $sql = " SELECT {$f2g}
              FROM {$this->tables['testcase_aliens']} TCAL
-             JOIN {$this->tables['aliens']} AL
-             ON alien_id = AL.id ";
-             
-    $sql .=  " WHERE testcase_id = " . intval($tcID) . 
-             " AND tcversion_id=" . intval($versionID);
+             WHERE testcase_id = $sfTC 
+             AND tcversion_id = $sfTCV";
 
     if (!is_null($alienID)) {
-      $sql .= " AND alien_id = " . intval($alienID);
+      $sql .= " AND alien_id = " 
+              . "'" 
+              . $this->db->prepare_string($alienID)
+              . "'";
     }
 
     if (!is_null($my['opt']['orderBy'])) {
       $sql .= ' ' . $my['opt']['orderBy'];
     }
+
+    echo $sql;
 
     switch( $my['opt']['accessKey'] ) {
       case 'testcase_id,tcversion_id';
