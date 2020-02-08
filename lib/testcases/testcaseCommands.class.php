@@ -1547,7 +1547,8 @@ class testcaseCommands {
     $guiObj = $this->initGuiBean($argsObj);
     $guiObj->user_feedback = '';
 
-    $this->initTestCaseBasicInfo($argsObj,$guiObj,array('accessByStepID' => false));
+    $this->initTestCaseBasicInfo($argsObj,$guiObj,
+             array('accessByStepID' => false));
 
     if (null != $argsObj->free_aliens) {
       $this->tcaseMgr->addAliens($guiObj,$argsObj->free_aliens);

@@ -4057,4 +4057,7 @@ $TLS_remove_alien_msgbox_title = "Remove Alien Reference";
 $TLS_remove_alien_msgbox_msg = "Really Remove Alien Reference #%i?";
 
 $TLS_audit_alien_assignment_removed_tc = "Alien Reference '{%1}' was removed from Test Case '{%2}'";
+
+$TLS_reference_not_found = "Test Link Warning!! - reference does not exist";
+
 // ----- END ------------------------------------------------------

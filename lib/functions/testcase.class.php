@@ -1186,8 +1186,6 @@ class testcase extends tlObjectWithAttachments {
     $this->initShowGuiActions($gui);
     $tplCfg = templateConfiguration('tcView');
 
-    var_dump($this->tproject_id);
-
     // Aliens are related to issuetracker
     $sql = "/* $debugMsg */
             SELECT issuetracker_id 
@@ -1195,20 +1193,26 @@ class testcase extends tlObjectWithAttachments {
             WHERE testproject_id = $this->tproject_id";
     $rs = $this->db->get_recordset($sql);
     
-    if (null != $rs) {
+    if ($gui->hasIssueTracker = (null != $rs)) {
       $system = new tlIssueTracker($this->db);
       $repo = $system->getInterfaceObject($this->tproject_id);
       
       $oc = array();
-      $rx = &$gui->currentVersionAliens;      
+      $rx = &$gui->currentVersionAliens; 
+      $akey = 'alien_id';
+      $ohnooo = "(" . lang_get('reference_not_found') . ")";
+      echo $ohnooo;
       foreach ($rx as $ik => $el) {
-        $oc[$el['name']] = $repo->getIssue($el['name']);
-        $rx[$ik]['blob'] = $oc[$el['name']];
+        $code = $el[$akey];
+        $oc[$code] = $repo->getIssue($code);
+        $rx[$ik]['blob'] = $oc[$code];
+        if (null == $rx[$ik]['blob']) {
+          $rx[$ik]['blob'] = new stdClass();
+          $rx[$ik]['blob']->summaryHTMLString = $ohnooo;
+        }
+        $rx[$ik]['name'] = $code;        
       }
     }
-    echo '<pre>';
-    var_dump($gui->currentVersionAliens);
-    echo '</pre>';
 
     $smarty->assign('gui',$gui);
     $smarty->display($tplCfg->tpl);
@@ -6933,6 +6937,10 @@ class testcase extends tlObjectWithAttachments {
       $goo->uploadOp = null;
     }
 
+    if( !property_exists($goo, 'hasIssueTracker') ) {
+      $goo->hasIssueTracker = false;
+    }
+
     $goo->new_version_source = 'this';
 
     $goo->execution_types = $this->execution_types;
@@ -9757,8 +9765,6 @@ class testcase extends tlObjectWithAttachments {
       $sql .= ' ' . $my['opt']['orderBy'];
     }
 
-    echo $sql;
-
     switch( $my['opt']['accessKey'] ) {
       case 'testcase_id,tcversion_id';
         $items = $this->db->fetchMapRowsIntoMap($sql,'testcase_id','tcversion_id',database::CUMULATIVE);
@@ -9801,7 +9807,7 @@ class testcase extends tlObjectWithAttachments {
             {$this->tables['testcase_aliens']} 
             WHERE testcase_id = {$safeID['tc']} 
             AND tcversion_id = {$safeID['tcv']} 
-            AND alien_id IN (" . implode(',',$idSet) . ")";
+            AND alien_id IN ('" . implode("','",$idSet) . "')";
 
     $nuCheck = $this->db->fetchRowsIntoMap($sql,'alien_id');
  
@@ -9812,7 +9818,7 @@ class testcase extends tlObjectWithAttachments {
     $dummy = array();
     foreach( $idSet as $kiwi ) {
       if( !isset($nuCheck[$kiwi]) ) {
-        $dummy[] = "({$safeID['tc']},{$safeID['tcv']},$kiwi)";
+        $dummy[] = "({$safeID['tc']},{$safeID['tcv']},'{$kiwi}')";
       }
     }
 
@@ -9822,6 +9828,7 @@ class testcase extends tlObjectWithAttachments {
 
     // Go ahead
     $sql .= implode(',', $dummy);
+    echo $sql;
     $this->db->exec_query($sql);
      
     // Now AUDIT
@@ -9894,12 +9901,13 @@ class testcase extends tlObjectWithAttachments {
     $adt = array('on' => self::AUDIT_ON);
     $adt = array_merge($adt,(array)$audit);
 
+    /* Needs security processing */
     if (!is_null($alID)) {
-      if(is_array($alID)) {
-          $sql .= " AND alien_id IN (" . implode(',',$alID) . ")";
+      if (is_array($alID)) {
+        $sql .= " AND alien_id IN (" . implode(',',$alID) . ")";
       }
       else {
-          $sql .= " AND alien_id = {$alID}";
+        $sql .= " AND alien_id = {$alID}";
       }
       $key4log = (array)$alID;
     }
@@ -9912,7 +9920,7 @@ class testcase extends tlObjectWithAttachments {
     $result = $this->db->exec_query($sql);
     
     /* delay the audit code */
-    if ($result && $adt['on']==self::AUDIT_ON) {
+    if (1==0 && $result && $adt['on']==self::AUDIT_ON) {
       $tcInfo = $this->tree_manager->get_node_hierarchy_info($tcID);
       if ($tcInfo && $key4log) {
         $et = new tlAlien($this->db);
