@@ -4060,4 +4060,8 @@ $TLS_audit_alien_assignment_removed_tc = "Alien Reference '{%1}' was removed fro
 
 $TLS_reference_not_found = "Test Link Warning!! - reference does not exist";
 
+$TLS_external_ref = "Reference";
+$TLS_hint_list_of_external_ref = 'REFX,REFY,REFZ';
+
+
 // ----- END ------------------------------------------------------

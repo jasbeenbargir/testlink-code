@@ -28,7 +28,7 @@
      btn_export_testplan_tree,btn_export_testplan_tree_for_results,
      tester_works_with_settings,btn_bulk_remove,btn_bulk_copy,
      test_grouped_by, parent_child_relation, exec_tree_counters_logic,
-     platforms'}
+     platforms,external_ref,hint_list_of_external_ref'}
 
 {config_load file="input_dimensions.conf" section="treeFilterForm"}
 
@@ -305,9 +305,23 @@
       <tr><td>&nbsp;</td></tr>
     {/if}
 
+    {* @20200209 *}
+    {if $control->filters.filter_aliens}
+      <tr>
+        <td>{$labels.external_ref}</td>
+        <td>
+          <input type="text" 
+            name="filter_aliens" size="{#ALIENS_FILTER_SIZE#}"
+            maxlength="{#ALIENS_FILTER_MAXLEN#}"
+            placeholder="{$labels.hint_list_of_external_ref}"
+            value="{$control->filters.filter_aliens.selected|escape}" />
+        </td>
+      </tr>
+    {/if}
 
     {* TICKET 4353: added filter for active/inactive test cases *}
-    {if isset($control->filters.filter_active_inactive) && $control->filters.filter_active_inactive}
+    {if isset($control->filters.filter_active_inactive) 
+      && $control->filters.filter_active_inactive}
       <tr>
         <td>{$labels.filter_active_inactive}</td>
           <td>
@@ -381,62 +395,62 @@
     {/if}
 
     {if $control->filters.filter_assigned_user}
-    <tr>
-      <td>{$labels.filter_owner}<img src="{$tlImages.info_small}" title="{$labels.tester_works_with_settings}"></td>
-      <td>
+      <tr>
+        <td>{$labels.filter_owner}
+          <img src="{$tlImages.info_small}" 
+            title="{$labels.tester_works_with_settings}">
+        </td>
+        <td>
+          {if $control->advanced_filter_mode}
+            <select class="chosen-select" name="filter_assigned_user[]"
+              id="filter_assigned_user"
+              multiple="multiple"
+              size="{$control->filter_item_quantity}" >
+              {html_options options=$control->filters.filter_assigned_user.items
+                            selected=$control->filters.filter_assigned_user.selected}
+            </select>
+          {else}
+            <select class="chosen-select" name="filter_assigned_user" 
+              id="filter_assigned_user"
+              onchange="javascript: triggerAssignedBox('filter_assigned_user',
+                'filter_assigned_user_include_unassigned',
+                '{$control->option_strings.any}',
+                '{$control->option_strings.none}',
+                '{$control->option_strings.somebody}');">
+             {html_options options=$control->filters.filter_assigned_user.items
+                                  selected=$control->filters.filter_assigned_user.selected}
+            </select>
 
-      {if $control->advanced_filter_mode}
-        <select class="chosen-select" name="filter_assigned_user[]"
-                id="filter_assigned_user"
-                multiple="multiple"
-                size="{$control->filter_item_quantity}" >
-        {html_options options=$control->filters.filter_assigned_user.items
-                      selected=$control->filters.filter_assigned_user.selected}
-        </select>
-        {else}
-        <select class="chosen-select" name="filter_assigned_user" 
-                id="filter_assigned_user"
-                onchange="javascript: triggerAssignedBox('filter_assigned_user',
-                                                               'filter_assigned_user_include_unassigned',
-                                                               '{$control->option_strings.any}',
-                                                               '{$control->option_strings.none}',
-                                                               '{$control->option_strings.somebody}');">
-        {html_options options=$control->filters.filter_assigned_user.items
-                              selected=$control->filters.filter_assigned_user.selected}
-        </select>
+            <br/>
+            <br />
+            <input type="checkbox"
+                   id="filter_assigned_user_include_unassigned"
+                   name="filter_assigned_user_include_unassigned"
+                       value="1"
+                       {if $control->filters.filter_assigned_user.filter_assigned_user_include_unassigned}
+                          checked="checked"
+                       {/if}
+                />
+            {$labels.include_unassigned_testcases}
+          {/if}
+        </td>
+      </tr>
+    {/if}
 
-        <br/>
-        <br />
-        <input type="checkbox"
-               id="filter_assigned_user_include_unassigned"
-               name="filter_assigned_user_include_unassigned"
-                   value="1"
-                   {if $control->filters.filter_assigned_user.filter_assigned_user_include_unassigned}
-                      checked="checked"
-                   {/if}
-            />
-        {$labels.include_unassigned_testcases}
-      {/if}
-
-      </td>
-    </tr>
-      {/if}
-
-    {* 20131226 *}
     {if $control->filters.filter_bugs}
       <tr>
         <td>{$labels.bugs_on_context}</td>
-        <td><input type="text" name="filter_bugs" size="{#BUGS_FILTER_SIZE#}"
-                               maxlength="{#BUGS_FILTER_MAXLEN#}"
-                               placeholder="{$labels.hint_list_of_bugs}"
-                               value="{$control->filters.filter_bugs.selected|escape}" />
+        <td><input type="text" 
+               name="filter_bugs" size="{#BUGS_FILTER_SIZE#}"
+               maxlength="{#BUGS_FILTER_MAXLEN#}"
+               placeholder="{$labels.hint_list_of_bugs}"
+               value="{$control->filters.filter_bugs.selected|escape}" />
         </td>
       </tr>
     {/if}
     
 
     {* custom fields are placed here *}
-
     {if $control->filters.filter_custom_fields && !$control->filters.filter_custom_fields.collapsed}
       <tr><td>&nbsp;</td></tr>
       {$control->filters.filter_custom_fields.items}

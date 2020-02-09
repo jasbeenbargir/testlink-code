@@ -825,6 +825,7 @@ CREATE TABLE /*prefix*/baseline_l1l2_details (
 
 CREATE TABLE /*prefix*/testcase_aliens (
   id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  testproject_id int(10) unsigned NOT NULL default '0',
   testcase_id int(10) unsigned NOT NULL DEFAULT '0',
   tcversion_id int(10) NOT NULL,
   alien_id varchar(64) NOT NULL default '0',

@@ -8,7 +8,7 @@
  * @filesource  testcaseCommands.class.php
  * @package     TestLink
  * @author      Francisco Mancardi - francisco.mancardi@gmail.com
- * @copyright   2007-2019, TestLink community 
+ * @copyright   2007-2020, TestLink community 
  * @link        http://testlink.sourceforge.net/
  *
  **/
@@ -222,7 +222,7 @@ class testcaseCommands {
     foreach($cfPlaces as $locationKey => $locationFilter) { 
       $guiObj->cf[$locationKey] = 
       $this->tcaseMgr->html_table_of_custom_field_inputs(null,null,'design','',null,null,
-                                                         $argsObj->testproject_id,$locationFilter, $_REQUEST);
+        $argsObj->testproject_id,$locationFilter, $_REQUEST);
     }  
 
     $guiObj->cancelActionJS = 'location.href=fRoot+' . "'" . 
@@ -270,8 +270,7 @@ class testcaseCommands {
     if($tcase['status_ok']) {
       $guiObj->actionOK = true;
       if($argsObj->stay_here) {   
-        $cf_map = $this->tcaseMgr->cfield_mgr->get_linked_cfields_at_design($argsObj->testproject_id,ENABLED,
-                                                                             NO_FILTER_SHOW_ON_EXEC,'testcase');
+        $cf_map = $this->tcaseMgr->cfield_mgr->get_linked_cfields_at_design($argsObj->testproject_id,ENABLED,NO_FILTER_SHOW_ON_EXEC,'testcase');
       
         $this->tcaseMgr->cfield_mgr->design_values_to_db($_REQUEST,$tcase['tcversion_id'],$cf_map);
 
@@ -1551,7 +1550,7 @@ class testcaseCommands {
              array('accessByStepID' => false));
 
     if (null != $argsObj->free_aliens) {
-      $this->tcaseMgr->addAliens($guiObj,$argsObj->free_aliens);
+      $this->tcaseMgr->addAliens($argsObj,$argsObj->free_aliens);
     }
 
     // set up for rendering

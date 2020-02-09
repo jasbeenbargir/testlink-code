@@ -9779,7 +9779,10 @@ class testcase extends tlObjectWithAttachments {
   }
 
   /**
-   *
+   * $idCard stdClass()
+   *   tproject_id
+   *   tcase_id
+   *   tcversion_id
    */
   function addAliens($idCard,$idSet,$audit=null) {
 
@@ -9792,7 +9795,8 @@ class testcase extends tlObjectWithAttachments {
       return true;
     }
 
-    $safeID = array('tc' => intval($idCard->tcase_id), 
+    $safeID = array('tpr' => intval($idCard->tproject_id),
+                    'tc' => intval($idCard->tcase_id), 
                     'tcv' => intval($idCard->tcversion_id));
     foreach($safeID as $key => $val ) {
       if($val <= 0) {
@@ -9807,28 +9811,33 @@ class testcase extends tlObjectWithAttachments {
             {$this->tables['testcase_aliens']} 
             WHERE testcase_id = {$safeID['tc']} 
             AND tcversion_id = {$safeID['tcv']} 
+            AND testproject_id = {$safeID['tpr']} 
             AND alien_id IN ('" . implode("','",$idSet) . "')";
+
+    echo $sql;
 
     $nuCheck = $this->db->fetchRowsIntoMap($sql,'alien_id');
  
-    $sql = "/* $debugMsg */" .
-           " INSERT INTO {$this->tables['testcase_aliens']} " .
-           " (testcase_id,tcversion_id,alien_id) VALUES ";
+    $sql = "/* $debugMsg */
+            INSERT INTO {$this->tables['testcase_aliens']} 
+            (testproject_id,testcase_id,tcversion_id,alien_id) 
+            VALUES ";
 
     $dummy = array();
     foreach( $idSet as $kiwi ) {
       if( !isset($nuCheck[$kiwi]) ) {
-        $dummy[] = "({$safeID['tc']},{$safeID['tcv']},'{$kiwi}')";
+        $dummy[] = "({$safeID['tpr']},
+                     {$safeID['tc']},{$safeID['tcv']},
+                     '{$kiwi}')";
       }
     }
 
     if( count($dummy) <= 0 ) {
       return;
     }
-
+   
     // Go ahead
     $sql .= implode(',', $dummy);
-    echo $sql;
     $this->db->exec_query($sql);
      
     // Now AUDIT

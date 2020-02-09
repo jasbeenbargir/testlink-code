@@ -218,7 +218,8 @@ class tlTestCaseFilterControl extends tlFilterControl {
                            'filter_importance',
                            'filter_execution_type',
                            'filter_custom_fields',
-                           'filter_platforms'),
+                           'filter_platforms',
+                           'filter_aliens'),
           'execution_mode' => array('filter_tc_id',
                                 'filter_testcase_name',
                                 'filter_toplevel_testsuite',
@@ -409,7 +410,8 @@ class tlTestCaseFilterControl extends tlFilterControl {
     // some common user input is already read in parent class
     parent::init_args();
 
-    // add settings and filters to parameter info array for request parsers
+    // add settings and filters to parameter 
+    // info array for request parsers
     $params = array();
 
     foreach ($this->all_settings as $name => $info) {
@@ -459,7 +461,8 @@ class tlTestCaseFilterControl extends tlFilterControl {
 
     // caller is needed for the logic to apply default values to filters when accessing
     // from desktop/main page
-    $extra_keys = array('caller','filter_result_result','filter_result_method','filter_result_build');
+    $extra_keys = array('caller','filter_result_result',
+      'filter_result_method','filter_result_build');
 
     foreach ($extra_keys as $ek) {
       $this->args->{$ek} = (isset($_REQUEST[$ek])) ? $_REQUEST[$ek] : null;
@@ -567,15 +570,22 @@ class tlTestCaseFilterControl extends tlFilterControl {
 
   /**
    * Initialize all filters. (called by parent::__construct())
-   * I'm double checking here with loaded configuration _and_ additional array
-   * $mode_filter_mapping, set according to defined mode, because this can avoid errors in case
-   * when users try to enable a filter in config that doesn't exist for a mode.
-   * Effect: Only existing and implemented filters can be activated in config file.
+   * I'm double checking here with loaded configuration 
+   * _and_ additional array
+   * $mode_filter_mapping, set according to defined mode, 
+   * because this can avoid errors in case
+   * when users try to enable a filter in config 
+   * that doesn't exist for a mode.
+   * Effect: 
+   * Only existing and implemented filters 
+   * can be activated in config file.
    */
   protected function init_filters() {
-    // In resulting data structure, all values have to be defined (at least initialized),
+    // In resulting data structure, 
+    // all values have to be defined (at least initialized),
     // no matter wether they are wanted for filtering or not.
-    $dummy = array('filter_keywords_filter_type','filter_result_result',
+    $dummy = array('filter_keywords_filter_type',
+                   'filter_result_result',
                    'filter_result_method','filter_result_build',
                    'filter_assigned_user_include_unassigned');
     
@@ -823,18 +833,20 @@ class tlTestCaseFilterControl extends tlFilterControl {
                    ($this->active_filters['filter_assigned_user_include_unassigned'] ? '1' : '0');
       }
       
-      if ($this->active_filters['filter_result_result']) 
-      {
-        $string .= '&filter_result_result=' . json_encode($this->active_filters['filter_result_result']) .
-                   '&filter_result_method=' . $this->active_filters['filter_result_method'] .
-                   '&filter_result_build=' .  $this->active_filters['filter_result_build'];
+      if ($this->active_filters['filter_result_result']) {
+        $string .= '&filter_result_result=' . 
+          json_encode($this->active_filters['filter_result_result']) . '&filter_result_method=' 
+             . $this->active_filters['filter_result_method'] 
+             . '&filter_result_build=' 
+             .  $this->active_filters['filter_result_build'];
       }
 
-      if( !is_null($this->active_filters['filter_bugs']))
-      {
-        $string .= '&' . http_build_query( array('filter_bugs' => $this->active_filters['filter_bugs']));  
-      }  
-
+      $kiki = array('filter_bugs','filter_aliens');
+      foreach ($kiki as $nu) {
+        if( !is_null($this->active_filters[$nu])) {
+          $string .= '&' . http_build_query( array($nu => $this->active_filters[$nu]));  
+        }          
+      }
     }
     
     return $string;
@@ -1873,12 +1885,28 @@ class tlTestCaseFilterControl extends tlFilterControl {
     $key = str_replace('init_','',__FUNCTION__);
     $selection = $this->args->{$key};
     
-    if (!$selection || $this->args->reset_filters) 
-    {
+    if (!$selection || $this->args->reset_filters) {
       $selection = null;
     } 
-    else 
-    {
+    else {
+      $this->do_filtering = true;
+    }
+    
+    $this->filters[$key] = array('selected' => $selection);
+    $this->active_filters[$key] = $selection;
+  } 
+
+  /**
+   *
+   */  
+  private function init_filter_aliens() 
+  {
+    $key = str_replace('init_','',__FUNCTION__);
+    $selection = $this->args->{$key};
+    if (!$selection || $this->args->reset_filters) {
+      $selection = null;
+    } 
+    else {
       $this->do_filtering = true;
     }
     
@@ -1890,8 +1918,6 @@ class tlTestCaseFilterControl extends tlFilterControl {
   /**
    *
    *
-   * @internal revisions
-   * @since 1.9.14
    * allow multiple selection (if advanced mode)
    */
   private function init_filter_workflow_status() {
@@ -2111,9 +2137,15 @@ class tlTestCaseFilterControl extends tlFilterControl {
         'filter_assigned_user' => array("POST", tlInputParameter::ARRAY_INT),
         'filter_custom_fields' => array("POST", tlInputParameter::ARRAY_STRING_N),
         'filter_result' => null,
-        'filter_bugs' => array("POST", tlInputParameter::STRING_N,0,240),
-        'filter_platforms' => array("POST", tlInputParameter::ARRAY_INT)); 
+        
+        'filter_bugs' => 
+          array("POST", tlInputParameter::STRING_N,0,240),
 
+        'filter_aliens' => 
+          array("POST", tlInputParameter::STRING_N,0,50),
+
+        'filter_platforms' => 
+          array("POST", tlInputParameter::ARRAY_INT)); 
 
   }
 
