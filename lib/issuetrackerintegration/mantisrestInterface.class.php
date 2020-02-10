@@ -176,17 +176,11 @@ class mantisrestInterface extends issueTrackerInterface {
     $issue = null;
     try {
       $jsonObj = $this->APIClient->getIssue($issueID);
-
+ 
       if( !is_null($jsonObj) && is_object($jsonObj)) {
         $item = $jsonObj->issues;
         $item = $item[0];
 
-      /*
-      echo '<pre>';
-      var_dump($item);
-      echo '</pre>';
-      die();
-      */
         $issue = new stdClass();
         $issue->IDHTMLString = "<b>{$issueID} : </b>";
         $issue->statusCode = intval($item->status->id);
@@ -195,7 +189,22 @@ class mantisrestInterface extends issueTrackerInterface {
         $issue->reportedBy = (string)$item->reporter->real_name;
         $issue->handledBy = (string)$item->handler->real_name;
         $issue->summary = $issue->summaryHTMLString = (string)$item->summary;
-    
+
+        $cond = array('version' => 'name',
+                      'fixed_in_version' => 'name',
+                      'target_version' => 'name');
+        $trans = array('version' => 'version',
+                       'fixed_in_version' => 'fixedInVersion',
+                       'target_version' => 'targetVersion');  
+
+        foreach ($cond as $prop => $wtg) {
+          $ip = $trans[$prop];
+          $issue->$ip = null;
+          if ( property_exists($item, $prop)) {
+            $issue->$ip = (string)$item->$prop->$wtg;
+          }
+        }
+
         $issue->isResolved = false;
       }
     }
