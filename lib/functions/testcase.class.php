@@ -9915,14 +9915,14 @@ class testcase extends tlObjectWithAttachments {
     /* Needs security processing */
     if (!is_null($alID)) {
       if (is_array($alID)) {
-        $sql .= " AND alien_id IN (" . implode(',',$alID) . ")";
-      }
-      else {
-        $sql .= " AND alien_id = {$alID}";
+        $sql .= " AND alien_id IN ('" . 
+                implode(',',$alID) . "')";
+      } else {
+        $sql .= " AND alien_id = '" .
+                $this->db->prepare_string($alID) . "'";
       }
       $key4log = (array)$alID;
-    }
-    else {
+    } else {
       $key4log = 
         array_keys((array)$this->getAliens($sf->tcase_id,
           $sf->tcversion_id));
