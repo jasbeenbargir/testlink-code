@@ -152,7 +152,7 @@ function gen_spec_view(&$db, $spec_view_type='testproject',
                          'testcases' => null ,
                          'exec_type' => null, 
                          'importance' => null, 
-                        'cfields' => null,
+                         'cfields' => null,
                          'platforms' => null,
                          'aliens' => null);
   foreach( $my as $key => $settings) {
@@ -190,7 +190,7 @@ function gen_spec_view(&$db, $spec_view_type='testproject',
   foreach($key2map as $tk => $fk) {
     $pfFilters[$tk] = isset($my['filters'][$fk]) ? $my['filters'][$fk] : null;
   }
-  
+
   // transform in array to be gentle with getTestSpecFromNode()
   $t2a = array('importance','status');
   foreach($t2a as $tortuga) {

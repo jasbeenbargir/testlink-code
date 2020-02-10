@@ -1204,7 +1204,6 @@ class testcase extends tlObjectWithAttachments {
       $rx = &$gui->currentVersionAliens; 
       $akey = 'alien_id';
       $ohnooo = "(" . lang_get('reference_not_found') . ")";
-      echo $ohnooo;
       foreach ($rx as $ik => $el) {
         $code = $el[$akey];
         $oc[$code] = $repo->getIssue($code);

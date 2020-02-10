@@ -459,7 +459,8 @@ function init_args(&$tproject_mgr)
   $args->control_panel = $pageCache;
   $getFromSession = !is_null($pageCache);
 
-  $booleankeys = array('refreshTree' => 'setting_refresh_tree_on_action',
+  $booleankeys = array('refreshTree' => 
+                         'setting_refresh_tree_on_action',
                        'importance' => 'filter_importance',
                        'executionType' => 'filter_execution_type');
 
@@ -512,7 +513,7 @@ function init_args(&$tproject_mgr)
     $args->platform_id = $pageCache[$ak];
   }
   
-  $args->alien_id = 0;
+  $args->alien_id = null;
   $ak = 'filter_aliens';
   if (isset($pageCache[$ak])) {
     $args->alien_id = $pageCache[$ak];
