@@ -331,7 +331,7 @@ function init_args()
   }  
 
 
-  $args->alien_id = 0;
+  $args->alien_id = null;
   $fk = 'filter_aliens';
   if (isset($session_data[$fk])) {
     $args->alien_id = $session_data[$fk];
