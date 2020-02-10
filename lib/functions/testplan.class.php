@@ -6317,7 +6317,6 @@ class testplan extends tlObjectWithAttachments
       $ic['where']['where'] .= $ic['where']['keywords']; 
     }
 
-    //var_dump(__FILE__,$ic['filters']['alien_id']);
     if( isset($ic['filters']['alien_id']) 
         && !is_null($ic['filters']['alien_id']) ) {    
       list($ic['join']['aliens'],$ic['where']['aliens']) = 
@@ -6555,8 +6554,6 @@ class testplan extends tlObjectWithAttachments
     $my = $this->initGetLinkedForTree(
                    $safe['tplan_id'],$filters,$options);
       
-    //var_dump($my);
-    //die();  
     // Need to detail better, origin of build_id.
     // is got from GUI Filters area ?
     if(  ($my['options']['allow_empty_build'] == 0) && $my['filters']['build_id'] <= 0 ) {
@@ -7707,13 +7704,17 @@ class testplan extends tlObjectWithAttachments
                     $this->helperConcatTCasePrefix($safe['tplan_id']) . "  AS full_external_id ";
 
     $commonFields .= ",UA.user_id";      
-    $commonFields .= ",NH_TCASE.name,TPTCV.creation_ts AS linked_ts,TPTCV.author_id AS linked_by" .
-                     ",NH_TCASE.parent_id AS testsuite_id";   
+    $commonFields .= 
+       ",NH_TCASE.name
+        ,TPTCV.creation_ts AS linked_ts
+        ,TPTCV.author_id AS linked_by
+        ,NH_TCASE.parent_id AS testsuite_id";   
     
     $commonFields .= ",NH_TSUITE.name AS tsuite_name ";  
 
-    $my['join']['tsuites'] = " JOIN {$this->tables['nodes_hierarchy']} NH_TSUITE " . 
-                             " ON NH_TSUITE.id = NH_TCASE.parent_id ";
+    $my['join']['tsuites'] = 
+      " JOIN {$this->tables['nodes_hierarchy']} NH_TSUITE " . 
+      " ON NH_TSUITE.id = NH_TCASE.parent_id ";
     
     
     
@@ -7725,6 +7726,7 @@ class testplan extends tlObjectWithAttachments
             $my['join']['tsuites'] .
             $my['join']['ua'] .
             $my['join']['keywords'] .
+            $my['join']['aliens'] .
             " WHERE TPTCV.testplan_id =" . $safe['tplan_id'] . 
             $my['where']['where'];
 

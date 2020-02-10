@@ -199,21 +199,8 @@ function gen_spec_view(&$db, $spec_view_type='testproject',
     }  
   }  
 
-  /*
-  echo '<pre>';
-  var_dump($pfFilters);
-  echo '</pre>';
-  */
-
   $test_spec = getTestSpecFromNode($db,$tcase_mgr,$linked_items,
                  $tobj_id,$id,$spec_view_type,$pfFilters);
-
-  /*
-  echo '<pre>';
-  var_dump($test_spec);
-  echo '</pre>';
-  die();
-  */
 
   $platforms = getPlatforms($db,$tproject_id,$testplan_id);
   $idx = 0;
@@ -367,7 +354,6 @@ $map_node_tccount, $filters=null, $options = null, $tproject_id = null)
 		$pfFilters[$tk] = isset($my['filters'][$fk]) ? $my['filters'][$fk] : null;
 	}
 
-  // var_dump($pfFilters);
 	$test_spec = getTestSpecFromNode($db,$tcase_mgr,$linked_items,$tobj_id,$id,$spec_view_type,$pfFilters,'req_order');
 
 	$platforms = getPlatforms($db,$tproject_id,$testplan_id);
@@ -629,13 +615,6 @@ function getFilteredSpecView(&$dbHandler, &$argsObj, &$tplanMgr, &$tcaseMgr, $fi
     getFilteredLinkedVersions($dbHandler,$argsObj, $tplanMgr, 
       $tcaseMgr, $options);
 
-  /*
-  echo '<pre>';
-  var_dump($tplan_linked_tcversions);
-  echo '</pre>';
-  die();
-  */
-
   // With these pieces we implement the AND type of keyword filter.
   $testCaseSet = null;
   $tryNextFilter = true;
@@ -823,11 +802,7 @@ function getTestSpecFromNode(&$dbHandler,&$tcaseMgr,&$linkedItems,$masterContain
       break;
     }
   }  
-  /*
-  echo '<pre>';
-  var_dump(__FILE__,$filters['alien_id']);
-  echo '</pre>';
-  */
+ 
   // NEED TO WORK BETTER
   $tcal_map = null;
   if( ($useFilter['aliens'] = '' !== trim($filters['alien_id']))) {
@@ -861,14 +836,6 @@ function getTestSpecFromNode(&$dbHandler,&$tcaseMgr,&$linkedItems,$masterContain
     $itemKeys = $itemSet;
 
     foreach($itemKeys as $key => $tspecKey) {
-
-      /*
-      echo $test_spec[$tspecKey]['id'] . '<br>';
-      echo '<pre>';
-      var_dump($tcal_map[$test_spec[$tspecKey]['id']]);
-      echo '</pre>';
-      */
-      
       // case insensitive search 
       if( ($useFilter['keyword_id'] 
            && !isset($tck_map[$test_spec[$tspecKey]['id']]) ) 
@@ -903,7 +870,6 @@ function getTestSpecFromNode(&$dbHandler,&$tcaseMgr,&$linkedItems,$masterContain
         $getFilters['status'] = array('not_in' => array_keys($s2h));   
       }
       
-      //var_dump($getFilters);
       $tcversionSet = $tcaseMgr->get_last_active_version($targetSet,$getFilters,$options);
       
       switch($specViewType) {
@@ -1517,13 +1483,6 @@ function getFilteredSpecViewFlat(&$dbHandler, &$argsObj, &$tplanMgr, &$tcaseMgr,
     getFilteredLinkedVersions($dbHandler,$argsObj,$tplanMgr, 
       $tcaseMgr, $options);
 
-  /*
-  echo '<pre>';
-  var_dump($tplan_linked_tcversions);
-  echo '</pre>';
-  die();
-  */
-
   // With these pieces we implement the AND type of keyword filter.
   $testCaseSet = null;
   $tryNextFilter = true;
@@ -1567,10 +1526,6 @@ function getFilteredSpecViewFlat(&$dbHandler, &$argsObj, &$tplanMgr, &$tcaseMgr,
                           'platforms' => $argsObj->platform_id,
                           'aliens' => $argsObj->alien_id);
               
-  echo '<pre>';
-  var_dump(__FILE__,$genSpecFilters);
-  echo '</pre>';
-
   if (isset($my['filters']['cfieldsFilter'])) {
     $genSpecFilters['cfields'] = $my['filters']['cfieldsFilter'];
   }           
@@ -1638,21 +1593,17 @@ function genSpecViewFlat(&$db, $spec_view_type='testproject', $tobj_id, $id, $na
     $pfFilters[$tk] = isset($my['filters'][$fk]) ? $my['filters'][$fk] : null;
   }
   
-  /*
-  var_dump(__LINE__,$pfFilters);
-  die();
-  */
-
   $test_spec = getTestSpecFromNode($db,$tcase_mgr,$linked_items,$tobj_id,$id,$spec_view_type,$pfFilters);
 
   $platforms = getPlatforms($db,$tproject_id,$testplan_id);
   $idx = 0;
   $a_tcid = array();
   $a_tsuite_idx = array();
-  if(count($test_spec))
-  {
-    $cfg = array('node_types' => $hash_id_descr, 'write_status' => $write_status,
-                 'is_uncovered_view_type' => $is_uncovered_view_type);
+  if (count($test_spec)) {
+    $cfg = array('node_types' => $hash_id_descr, 
+                 'write_status' => $write_status,
+                 'is_uncovered_view_type' 
+                   => $is_uncovered_view_type);
                  
     // $a_tsuite_idx
     // key: test case version id
