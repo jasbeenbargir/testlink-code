@@ -811,26 +811,21 @@ class tlTestCaseFilterControl extends tlFilterControl {
       $keyword_list = null;
       if (is_array($this->active_filters['filter_keywords'])) {
         $keyword_list = implode(',', $this->active_filters['filter_keywords']);
-      } 
-      else if ($this->active_filters['filter_keywords']) 
-      {
+      } else if ($this->active_filters['filter_keywords']) {
         $keyword_list = $this->active_filters['filter_keywords'];
       }     
-      
       
       // Need to undertand why for other filters that also are array
       // we have choosen to serialize, and here not.
       // may be to avoid more refactoring
-      if ($keyword_list) 
-      {
+      if ($keyword_list) {
         $string .= '&filter_keywords=' . $keyword_list . 
                    '&filter_keywords_filter_type=' . 
                    $this->active_filters['filter_keywords_filter_type'];
       }
       
       // Using serialization      
-      if ($this->active_filters['filter_assigned_user']) 
-      {
+      if ($this->active_filters['filter_assigned_user']) {
         $string .= '&filter_assigned_user='. json_encode($this->active_filters['filter_assigned_user']) .
                    '&filter_assigned_user_include_unassigned=' . 
                    ($this->active_filters['filter_assigned_user_include_unassigned'] ? '1' : '0');
@@ -894,14 +889,16 @@ class tlTestCaseFilterControl extends tlFilterControl {
             $filters->hide_testcases = 1; // ??
             $opt_etree->allow_empty_build = 1;
             $opt_etree->hideTestCases = 1;
-            $opt_etree->getTreeMethod = 'getLinkedForTesterAssignmentTree';
+            $opt_etree->getTreeMethod = 
+              'getLinkedForTesterAssignmentTree';
           break;
           
           case 'tc_exec_assignment':
             $filters->hide_testcases = 0;
             $opt_etree->hideTestCases = 0;
             $opt_etree->allow_empty_build = 0;
-            $opt_etree->getTreeMethod = 'getLinkedForTesterAssignmentTree';
+            $opt_etree->getTreeMethod = 
+              'getLinkedForTesterAssignmentTree';
             
             // TICKET 4905: Test Case Tester Assignment - filters dont work properly 
             //        for 'Assigned to' Field
@@ -914,16 +911,18 @@ class tlTestCaseFilterControl extends tlFilterControl {
             $filters->hide_testcases = 0;
             $opt_etree->hideTestCases = 0;
             $opt_etree->allow_empty_build = 1;
-            $opt_etree->getTreeMethod = 'getLinkedForTesterAssignmentTree';
+            $opt_etree->getTreeMethod = 
+              'getLinkedForTesterAssignmentTree';
           break;
           
         }
-        list($tree_menu, $testcases_to_show) = testPlanTree($this->db,$gui->menuUrl,
-                                                            $this->args->testproject_id,
-                                                            $this->args->testproject_name,
-                                                            $this->args->testplan_id,
-                                                            $this->args->testplan_name,
-                                                            $filters,$opt_etree);
+        list($tree_menu, $testcases_to_show) = 
+          testPlanTree($this->db,$gui->menuUrl,
+                       $this->args->testproject_id,
+                       $this->args->testproject_name,
+                       $this->args->testplan_id,
+                       $this->args->testplan_name,
+                       $filters,$opt_etree);
         $this->set_testcases_to_show($testcases_to_show);
 
         $root_node = $tree_menu->rootnode;

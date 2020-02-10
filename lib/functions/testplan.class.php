@@ -9,7 +9,7 @@
  * @filesource  testplan.class.php
  * @package     TestLink
  * @author      franciscom
- * @copyright   2007-2019, TestLink community 
+ * @copyright   2007-2020, TestLink community 
  * @link        http://testlink.sourceforge.net/
  *
  **/
@@ -6221,7 +6221,6 @@ class testplan extends tlObjectWithAttachments
     $ic['join']['tsuites'] = '';
     $ic['join']['aliens'] = '';
 
-
     $ic['where'] = array();
     $ic['where']['where'] = '';
     $ic['where']['platforms'] = '';
@@ -6318,6 +6317,7 @@ class testplan extends tlObjectWithAttachments
       $ic['where']['where'] .= $ic['where']['keywords']; 
     }
 
+    //var_dump(__FILE__,$ic['filters']['alien_id']);
     if( isset($ic['filters']['alien_id']) 
         && !is_null($ic['filters']['alien_id']) ) {    
       list($ic['join']['aliens'],$ic['where']['aliens']) = 
@@ -6552,17 +6552,19 @@ class testplan extends tlObjectWithAttachments
     $debugMsg = 'Class:' . __CLASS__ . ' - Method: ' . __FUNCTION__;
     $safe['tplan_id'] = intval($id);
     
-    $my = $this->initGetLinkedForTree($safe['tplan_id'],$filters,$options);
+    $my = $this->initGetLinkedForTree(
+                   $safe['tplan_id'],$filters,$options);
       
+    //var_dump($my);
+    //die();  
     // Need to detail better, origin of build_id.
     // is got from GUI Filters area ?
-    if(  ($my['options']['allow_empty_build'] == 0) && $my['filters']['build_id'] <= 0 )
-    {
+    if(  ($my['options']['allow_empty_build'] == 0) && $my['filters']['build_id'] <= 0 ) {
       // CRASH IMMEDIATELY
       throw new Exception( $debugMsg . " Can NOT WORK with \$my['filters']['build_id'] <= 0");
     }
-    if( !$my['green_light'] ) 
-    {
+
+    if( !$my['green_light'] ) {
       // No query has to be run, because we know in advance that we are
       // going to get NO RECORDS
       return null;  
@@ -6632,6 +6634,7 @@ class testplan extends tlObjectWithAttachments
                  " JOIN {$this->tables['nodes_hierarchy']} NH_TCASE ON NH_TCASE.id = NH_TCV.parent_id " .
               $my['join']['ua'] .
               $my['join']['keywords'] .
+              $my['join']['aliens'] .
               
               " JOIN ({$sqlLEX}) AS LEX " .
               " ON  LEX.testplan_id = TPTCV.testplan_id " .
@@ -6952,6 +6955,7 @@ class testplan extends tlObjectWithAttachments
    *            'exec_status','build_id', 'cf_hash',
    *            'urgencyImportance', 'tsuites_id',
    *            'platform_id', 'exec_type','tcase_name'
+   *            'aliens'
    *            filters defaults values 
    *            are setted on initGetLinkedForTree()
    *
@@ -8126,6 +8130,43 @@ class testplan extends tlObjectWithAttachments
     }  
     return array($sql['join'],$sql['filter']);
   }
+
+
+  /**
+   * args :
+   *     [$alien_id]: can be an array
+   */
+  function getAliensLinkedTCVersions($id,$alien_id=0) {
+
+    $debugMsg = 'Class:' . __CLASS__ . ' - Method: ' 
+                . __FUNCTION__;
+    $items = null;
+
+    $kwFilter= '' ;
+    if( is_array($alien_id) ) {
+        $kwFilter = " AND alien_id IN ('" . 
+                    implode(',',$alien_id) . "'')"; 
+    }
+    else if (trim($alien_id) != '') {
+        $kwFilter = " AND alien_id = '" .
+                    $this->prepare_string($alien_id) . "'";
+    }
+
+    $sql = " /* $debugMsg */ ";
+    $sql .= " SELECT TAL.testcase_id,TAL.alien_id " .
+            " FROM {$this->tables['testcase_aliens']} TAL " .
+            " JOIN {$this->tables['testplan_tcversions']} TPTCV " .
+            " ON TAL.tcversion_id = TPTCV.tcversion_id " .
+            " WHERE TPTCV.testplan_id = " . intval($id) . 
+            " {$kwFilter} ORDER BY alien_id ASC ";
+
+    // CUMULATIVE is needed to get all aliens assigned 
+    // to each testcase linked to testplan         
+    $items = 
+        $this->db->fetchRowsIntoMap($sql,'testcase_id',database::CUMULATIVE);
+
+    return $item;
+  } // end function
 
 
 } // end class testplan

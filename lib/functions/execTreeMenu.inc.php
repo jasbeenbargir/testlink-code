@@ -326,36 +326,32 @@ function initExecTree($filtersObj,$optionsObj) {
   $buildFiltersPanel = isset($filtersObj->filter_result_build) ? $filtersObj->filter_result_build : null;
   $build2filter_assignments = is_null($buildFiltersPanel) ? $buildSettingsPanel : $buildFiltersPanel;
 
-  $keymap = array('tcase_id' => 'filter_tc_id', 'assigned_to' => 'filter_assigned_user',
-                  'platform_id' => 'setting_platform', 'exec_type' => 'filter_execution_type',
-                  'urgencyImportance' => 'filter_priority', 'tcase_name' => 'filter_testcase_name',
-                  'cf_hash' => 'filter_custom_fields', 'build_id' => array('setting_build','build_id'),
-                  'bug_id' => 'filter_bugs');
+  $keymap = array('tcase_id' => 'filter_tc_id', 
+                  'assigned_to' => 'filter_assigned_user',
+                  'platform_id' => 'setting_platform', 
+                  'exec_type' => 'filter_execution_type',
+                  'urgencyImportance' => 'filter_priority', 
+                  'tcase_name' => 'filter_testcase_name',
+                  'cf_hash' => 'filter_custom_fields', 
+                  'build_id' => array('setting_build','build_id'),
+                  'bug_id' => 'filter_bugs',
+                  'alien_id' => 'filter_aliens');
   
-  if( property_exists($optionsObj,'buildIDKeyMap') && !is_null($filtersObj->filter_result_build) )
-  {
+  if( property_exists($optionsObj,'buildIDKeyMap') && !is_null($filtersObj->filter_result_build) ) {
     $keymap['build_id'] = $optionsObj->buildIDKeyMap;
   }
   
-  foreach($keymap as $key => $prop)
-  {
-    if( is_array($prop) )
-    {
-      foreach($prop as $tryme)
-      {
-        if( isset($filtersObj->$tryme) )
-        {
+  foreach($keymap as $key => $prop) {
+    if (is_array($prop)) {
+      foreach($prop as $tryme) {
+        if( isset($filtersObj->$tryme) ) {
           $filters[$key] = $filtersObj->$tryme;
           break;
-        }
-        else
-        {
+        } else {
           $filters[$key] = null;
         }
       } 
-    }
-    else
-    {
+    } else {
       $filters[$key] = isset($filtersObj->$prop) ? $filtersObj->$prop : null; 
     } 
   }
@@ -363,8 +359,7 @@ function initExecTree($filtersObj,$optionsObj) {
 
   $filters['keyword_id'] = 0;
   $filters['keyword_filter_type'] = 'Or';
-  if ( !is_null($filtersObj) && property_exists($filtersObj, 'filter_keywords') && !is_null($filtersObj->filter_keywords)) 
-  {
+  if ( !is_null($filtersObj) && property_exists($filtersObj, 'filter_keywords') && !is_null($filtersObj->filter_keywords)) {
     $filters['keyword_id'] = $filtersObj->filter_keywords;
     $filters['keyword_filter_type'] = $filtersObj->filter_keywords_filter_type;
   }
@@ -373,29 +368,34 @@ function initExecTree($filtersObj,$optionsObj) {
   $options['hideTestCases'] = isset($optionsObj->hideTestCases) ?
                                     $optionsObj->hideTestCases : false;
 
-  $options['include_unassigned'] = isset($filtersObj->filter_assigned_user_include_unassigned) ?
-                                         $filtersObj->filter_assigned_user_include_unassigned : false;
+  $options['include_unassigned'] = isset(
+    $filtersObj->filter_assigned_user_include_unassigned) ?
+    $filtersObj->filter_assigned_user_include_unassigned : false;
 
   // useful when using tree on set urgent test cases
-  $options['allow_empty_build'] = isset($optionsObj->allow_empty_build) ?
-                                    $optionsObj->allow_empty_build : false;
+  $options['allow_empty_build'] = isset(
+    $optionsObj->allow_empty_build) ?
+    $optionsObj->allow_empty_build : false;
 
 
   // NOT CLEAR what to do
   // $status = isset($filters->filter_result_result) ? $filters->filter_result_result : null;
-  $show_testsuite_contents = isset($filtersObj->show_testsuite_contents) ? 
-                             $filtersObj->show_testsuite_contents : true;
+  $show_testsuite_contents = 
+    isset($filtersObj->show_testsuite_contents) ? 
+    $filtersObj->show_testsuite_contents : true;
 
   
-  $useCounters=isset($optionsObj->useCounters) ? $optionsObj->useCounters : null;
+  $useCounters = isset($optionsObj->useCounters) ? 
+                 $optionsObj->useCounters : null;
   $useColors=isset($optionsObj->useColours) ? $optionsObj->useColours : null;
   $colorBySelectedBuild = isset($optionsObj->testcases_colouring_by_selected_build) ? 
-                          $optionsObj->testcases_colouring_by_selected_build : null;
+    $optionsObj->testcases_colouring_by_selected_build : null;
 
   $options['tc_action_enabled'] = isset($optionsObj->tc_action_enabled) ?  $optionsObj->tc_action_enabled : true;
   $options['showTestCaseExecStatus'] = isset($optionsObj->showTestCaseExecStatus) ?  $optionsObj->showTestCaseExecStatus : true;
 
-  return array($filters,$options,$show_testsuite_contents,$useCounters,$useColors,$colorBySelectedBuild);
+  return array($filters,$options,$show_testsuite_contents,
+               $useCounters,$useColors,$colorBySelectedBuild);
 }
 
 
@@ -632,7 +632,8 @@ function applyStatusFilters($tplan_id,&$items2filter,&$fobj,&$tplan_mgr,$statusC
  *
  * @internal revisions
  */
-function testPlanTree(&$dbHandler,&$menuUrl,$tproject_id,$tproject_name,$tplan_id,
+function testPlanTree(&$dbHandler,&$menuUrl,$tproject_id,
+                      $tproject_name,$tplan_id,
                       $tplan_name,$objFilters,$objOptions) 
 {
   $debugMsg = ' - Method: ' . __FUNCTION__;
