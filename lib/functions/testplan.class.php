@@ -6064,26 +6064,26 @@ class testplan extends tlObjectWithAttachments
     $my = $this->initGetLinkedForTree($safe['tplan_id'],$filters,$options);
    
   
-    if( $my['filters']['build_id'] <= 0 )
-    {
+    if( $my['filters']['build_id'] <= 0 ) {
       // CRASH IMMEDIATELY
-      throw new Exception( $debugMsg . " Can NOT WORK with \$my['filters']['build_id'] <= 0");
+      throw new Exception( $debugMsg . 
+        " Can NOT WORK with \$my['filters']['build_id'] <= 0");
     }
     
-    if( !$my['green_light'] ) 
-    {
-      // No query has to be run, because we know in advance that we are
+    if (!$my['green_light']) {
+      // No query has to be run, because we 
+      // know in advance that we are
       // going to get NO RECORDS
       return null;  
     }
 
     $platform4EE = " ";
-    if( !is_null($my['filters']['platform_id']) )
-    {
+    if (!is_null($my['filters']['platform_id'])) {
       $platform4EE = " AND EE.platform_id = " . intval($my['filters']['platform_id']);
     }
   
-    $sqlLEBBP = " SELECT EE.tcversion_id,EE.testplan_id,EE.platform_id,EE.build_id," .
+    $sqlLEBBP = " SELECT EE.tcversion_id,EE.testplan_id,
+                  EE.platform_id,EE.build_id," .
                 " MAX(EE.id) AS id " .
                 " FROM {$this->tables['executions']} EE " . 
                 " WHERE EE.testplan_id = " . $safe['tplan_id'] . 
@@ -6096,11 +6096,9 @@ class testplan extends tlObjectWithAttachments
     // only to EXECUTED test case versions, the not_run piece of union is USELESS
     $union['not_run'] = null;        
 
-    // if(isset($my['filters']['bug_id'])
-
-    if(!isset($my['filters']['bug_id']))
-    {
-      // adding tcversion on output can be useful for Filter on Custom Field values,
+    if (!isset($my['filters']['bug_id'])) {
+      // adding tcversion on output can be useful 
+      // for Filter on Custom Field values,
       // because we are saving values at TCVERSION LEVEL
       //  
       $union['not_run'] = "/* {$debugMsg} sqlUnion - not run */" .
@@ -6119,6 +6117,7 @@ class testplan extends tlObjectWithAttachments
                           $my['join']['keywords'] .
                           $my['join']['cf'] .
                           $my['join']['tsuites'] .
+                          $my['join']['aliens'] .
                           
                           " LEFT OUTER JOIN {$this->tables['platforms']} PLAT ON PLAT.id = TPTCV.platform_id " .
                 
@@ -6133,6 +6132,9 @@ class testplan extends tlObjectWithAttachments
                           " AND E.testplan_id = TPTCV.testplan_id " .
                           " AND E.platform_id = TPTCV.platform_id " .
                           " AND E.build_id = " . $my['filters']['build_id'] .
+
+                          $my['join']['bugs'] .
+
 
                           " WHERE TPTCV.testplan_id =" . $safe['tplan_id'] .
                           $my['where']['not_run'] .
@@ -6157,7 +6159,9 @@ class testplan extends tlObjectWithAttachments
                      $my['join']['keywords'] .
                      $my['join']['cf'] .
                      $my['join']['tsuites'] .
-
+                     $my['join']['aliens'] .
+                     // FOR JOIN WITH bugs
+                     // See below
                      " LEFT OUTER JOIN {$this->tables['platforms']} PLAT ON PLAT.id = TPTCV.platform_id " .
                      
                      " JOIN ({$sqlLEBBP}) AS LEBBP " .
@@ -6172,7 +6176,11 @@ class testplan extends tlObjectWithAttachments
                      " AND E.platform_id = TPTCV.platform_id " .
                      " AND E.build_id = " . $my['filters']['build_id'] .
 
-                     $my['join']['bugs'] .  // need to be here because uses join with E table alias
+                     // CRITIC!! 
+                     // need to be here because uses join 
+                     // with E table alias
+
+                     $my['join']['bugs'] .  
 
                      " WHERE TPTCV.testplan_id =" . $safe['tplan_id'] .
                      $my['where']['where'];
@@ -6601,7 +6609,8 @@ class testplan extends tlObjectWithAttachments
               $my['join']['ua'] .
               $my['join']['keywords'] .
               $my['join']['aliens'] .
-              
+              $my['join']['bugs'] .
+     
               " /* Get REALLY NOT RUN => BOTH LE.id AND E.id ON LEFT OUTER see WHERE  */ " .
               " LEFT OUTER JOIN ({$sqlLEX}) AS LEX " .
               " ON  LEX.testplan_id = TPTCV.testplan_id " .
@@ -6632,6 +6641,7 @@ class testplan extends tlObjectWithAttachments
               $my['join']['ua'] .
               $my['join']['keywords'] .
               $my['join']['aliens'] .
+              $my['join']['bugs'] .
               
               " JOIN ({$sqlLEX}) AS LEX " .
               " ON  LEX.testplan_id = TPTCV.testplan_id " .
@@ -7129,6 +7139,7 @@ class testplan extends tlObjectWithAttachments
                          $my['join']['ua'] .
                          $my['join']['keywords'] .
                          $my['join']['aliens'] .
+                         $my['join']['bugs'] .
               
                          " LEFT OUTER JOIN {$this->tables['platforms']} PLAT ON PLAT.id = TPTCV.platform_id " .
                          " /* Get REALLY NOT RUN => BOTH LE.id AND E.id ON LEFT OUTER see WHERE  */ " .
@@ -7161,6 +7172,7 @@ class testplan extends tlObjectWithAttachments
                      $my['join']['ua'] .
                      $my['join']['keywords'] .
                      $my['join']['aliens'] .
+                     $my['join']['bugs'] .
              
                      " JOIN ({$sqlLEX}) AS LEX " .
                      " ON  LEX.testplan_id = TPTCV.testplan_id " .
@@ -7727,6 +7739,8 @@ class testplan extends tlObjectWithAttachments
             $my['join']['ua'] .
             $my['join']['keywords'] .
             $my['join']['aliens'] .
+            $my['join']['bugs'] .
+
             " WHERE TPTCV.testplan_id =" . $safe['tplan_id'] . 
             $my['where']['where'];
 
@@ -7899,6 +7913,7 @@ class testplan extends tlObjectWithAttachments
           $my['join']['keywords'] .
           $my['join']['ua'] .
           $my['join']['cf'] .
+          $my['join']['aliens'] .
 
         " /* Get REALLY NOT RUN => 
              BOTH LE.id AND E.id ON LEFT OUTER see WHERE  */ 
@@ -7913,6 +7928,7 @@ class testplan extends tlObjectWithAttachments
           AND E.testplan_id = TPTCV.testplan_id 
          */ " .
         
+        // $my['join']['bugs'] .
 
         " WHERE TPTCV.testplan_id =" . $safe['tplan_id'] .
         $my['where']['not_run'] .
@@ -7929,6 +7945,7 @@ class testplan extends tlObjectWithAttachments
         $my['join']['keywords'] .
         $my['join']['ua'] .
         $my['join']['cf'] .
+        $my['join']['aliens'] .
 
         " JOIN {$theView} AS LEXBTPLANPL
           ON  LEXBTPLANPL.testplan_id = TPTCV.testplan_id 
@@ -7939,11 +7956,14 @@ class testplan extends tlObjectWithAttachments
           AND E.testplan_id = LEXBTPLANPL.testplan_id         
           AND E.platform_id = LEXBTPLANPL.platform_id 
           WHERE TPTCV.testplan_id = {$safe['tplan_id']} " .
+
+        $my['join']['bugs'] .
+
         $my['where']['where'];
 
-    $xql = is_null($union['not_run']) ? $union['exec'] : $union;
+    // $xql = is_null($union['not_run']) ? $union['exec'] : $union;
 
-    return $xql;
+    return $union;
   }
 
   //  
@@ -8001,7 +8021,6 @@ class testplan extends tlObjectWithAttachments
       return null;  
     }
 
-    
     $sqlLatestExecOnTPLAN = 
       " SELECT LEBTP.tcversion_id,LEBTP.testplan_id, LEBTP.id
         FROM {$this->views['latest_exec_by_testplan']} LEBTP  
@@ -8030,6 +8049,7 @@ class testplan extends tlObjectWithAttachments
           $my['join']['keywords'] .
           $my['join']['ua'] .
           $my['join']['cf'] .
+          $my['join']['aliens'] .
 
         " /* Get REALLY NOT RUN => 
              BOTH LE.id AND E.id ON LEFT OUTER see WHERE  */ " .
@@ -8041,6 +8061,9 @@ class testplan extends tlObjectWithAttachments
         " ON  E.tcversion_id = TPTCV.tcversion_id " .
         " AND E.testplan_id = TPTCV.testplan_id " .
         " WHERE TPTCV.testplan_id =" . $safe['tplan_id'] .
+
+        $my['join']['bugs'] .
+
         $my['where']['not_run'] .
         " /* Get REALLY NOT RUN => BOTH LE.id AND E.id NULL  */ " .
         " AND LEXBTPLAN.id IS NULL";
@@ -8056,6 +8079,7 @@ class testplan extends tlObjectWithAttachments
         $my['join']['keywords'] .
         $my['join']['ua'] .
         $my['join']['cf'] .
+        $my['join']['aliens'] .
 
         " JOIN ({$sqlLatestExecOnTPLAN}) AS LEXBTPLAN " .
         " ON  LEXBTPLAN.testplan_id = TPTCV.testplan_id " .
@@ -8064,10 +8088,11 @@ class testplan extends tlObjectWithAttachments
         " JOIN {$this->tables['executions']} E " .
         " ON  E.id = LEXBTPLAN.id " .
         " AND E.testplan_id = LEXBTPLAN.testplan_id " .        
-        $my['where']['where'];
 
-    $xql = is_null($union['not_run']) ? $union['exec'] : $union;
-    return $xql;
+        $my['join']['bugs'] .
+  
+        $my['where']['where'];
+    return $union;
   }
 
 

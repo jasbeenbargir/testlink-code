@@ -29,7 +29,8 @@
 
 // $tproject_id,$tproject_name,$tplan_id,                  $tplan_name,
 
-function execTree(&$dbHandler,&$menuUrl,$context,$objFilters,$objOptions) 
+function execTree(&$dbHandler,&$menuUrl,$context,$objFilters,
+                  $objOptions) 
 {
   $chronos[] = microtime(true);
 
@@ -60,7 +61,8 @@ function execTree(&$dbHandler,&$menuUrl,$context,$objFilters,$objOptions)
        $renderTreeNodeOpt['useCounters'],
        $renderTreeNodeOpt['useColors'],$colorBySelectedBuild) = initExecTree($objFilters,$objOptions);
 
-  $renderTreeNodeOpt['showTestCaseExecStatus'] = $options['showTestCaseExecStatus'];
+  $renderTreeNodeOpt['showTestCaseExecStatus'] = 
+    $options['showTestCaseExecStatus'];
 
   if( property_exists($objOptions, 'actionJS')) {
     if(isset($objOptions->actionJS['testproject'])) {
@@ -89,11 +91,13 @@ function execTree(&$dbHandler,&$menuUrl,$context,$objFilters,$objOptions)
                        'order_cfg' => array("type" =>'exec_order',"tplan_id" => $context['tplan_id']));
 
   $my['filters'] = array('exclude_node_types' => 
-                    array('testplan' => 'exclude_me','requirement_spec'=> 'exclude_me',
-                                                       'requirement'=> 'exclude_me'),
-                         'exclude_children_of' => 
-                           array('testcase' => 'exclude_my_children',
-                                 'requirement_spec'=> 'exclude_my_children') );
+                    array('testplan' => 'exclude_me',
+                          'requirement_spec'=> 'exclude_me',
+                          'requirement'=> 'exclude_me'),
+                          'exclude_children_of' => 
+                    array('testcase' => 'exclude_my_children',
+                          'requirement_spec' 
+                             => 'exclude_my_children') );
 
   // added for filtering by toplevel testsuite
   if (isset($objFilters->filter_toplevel_testsuite) && is_array($objFilters->filter_toplevel_testsuite))  {
@@ -174,18 +178,21 @@ function execTree(&$dbHandler,&$menuUrl,$context,$objFilters,$objOptions)
         switch ($objOptions->exec_tree_counters_logic) {
           case USE_LATEST_EXEC_ON_TESTPLAN_FOR_COUNTERS:
             $n3 = 
-              $tplan_mgr->getLinkedForExecTreeCross($context['tplan_id'],
-                             $filters,$options);
+              $tplan_mgr->getLinkedForExecTreeCross(
+                $context['tplan_id'],
+                $filters,$options);
           break;
           
           case USE_LATEST_EXEC_ON_TESTPLAN_PLAT_FOR_COUNTERS:
             $n3 = 
-              $tplan_mgr->getLinkedForExecTreeIVU($context['tplan_id'],
-                             $filters,$options);
+              $tplan_mgr->getLinkedForExecTreeIVU(
+                  $context['tplan_id'],
+                  $filters,$options);
           break;
         }
         $ssx = $n3['exec'];
-        if( is_array($n3) ) {
+        if( is_array($n3) 
+            && null != $n3['not_run']) {
            $ssx .= ' UNION ' . $n3['not_run'];
         }
         $tcc = $dbHandler->fetchRowsIntoMap($ssx,'tcase_id');
@@ -445,14 +452,12 @@ function prepareExecTreeNode(&$db,&$node,&$map_node_tccount,
   // Then BE VERY Carefull if you plan to refactor, to avoid unexpected
   // side effects.
   // 
-  if($node_type == 'testcase')
-  {
-
-    $tpNode = isset($tplan_tcases[$node['id']]) ? $tplan_tcases[$node['id']] : null;
+  if ($node_type == 'testcase') {
+    $tpNode = isset($tplan_tcases[$node['id']]) 
+              ? $tplan_tcases[$node['id']] : null;
     $tcase_counters = array_fill_keys($status_descr_list, 0);
 
-    if( is_null($tpNode) )
-    {     
+    if (is_null($tpNode)) {     
       // Dev Notes: when this happens ?
       // 1. two or more platforms on test plan (PLAT-A,PLAT-B)
       // 2. TC-1X => on PLAT-A
@@ -469,18 +474,11 @@ function prepareExecTreeNode(&$db,&$node,&$map_node_tccount,
       unset($tplan_tcases[$node['id']]);
       // $node = null;
       $node = REMOVEME;
-    } 
-    else 
-    {
-
-      if( isset($tpNode['exec_status']) )
-      {
-        if( isset($resultsCfg['code_status'][$tpNode['exec_status']]) )
-        {
+    } else {
+      if( isset($tpNode['exec_status']) ) {
+        if( isset($resultsCfg['code_status'][$tpNode['exec_status']]) ) {
           $tc_status_descr = $resultsCfg['code_status'][$tpNode['exec_status']];   
-        }  
-        else
-        {
+        } else {
           throw new Exception("Config Issue - exec status code: {$tpNode['exec_status']}", 1);
         }  
       }
@@ -777,15 +775,12 @@ function testPlanTree(&$dbHandler,&$menuUrl,$tproject_id,
         }
 
         $tplan_tcases = $dbHandler->$kmethod($sql2run,'tcase_id');
-        if($doPinBall && !is_null($tplan_tcases))
-        {
+        if($doPinBall && !is_null($tplan_tcases)) {
           $kwc = count($filters['keyword_id']);
           $ak = array_keys($tplan_tcases);
           $mx = null;
-          foreach($ak as $tk)
-          {
-            if($tplan_tcases[$tk]['recordcount'] == $kwc)
-            {
+          foreach($ak as $tk) {
+            if($tplan_tcases[$tk]['recordcount'] == $kwc) {
               $mx[$tk] = $tplan_tcases[$tk];
             } 
           } 
@@ -796,9 +791,7 @@ function testPlanTree(&$dbHandler,&$menuUrl,$tproject_id,
       }
     }   
 
-    
-    if (is_null($tplan_tcases))
-    {
+    if (is_null($tplan_tcases)) {
       $tplan_tcases = array();
     }
 
@@ -827,8 +820,9 @@ function testPlanTree(&$dbHandler,&$menuUrl,$tproject_id,
 
 
     
-    $testcase_counters = prepareExecTreeNode($dbHandler,$test_spec,$map_node_tccount,
-                                             $tplan_tcases,$pnFilters,$pnOptions);
+    $testcase_counters = prepareExecTreeNode($dbHandler,$test_spec,
+                           $map_node_tccount,
+                           $tplan_tcases,$pnFilters,$pnOptions);
 
     /* 2019 */
     foreach($testcase_counters as $key => $value) {

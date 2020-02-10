@@ -1811,18 +1811,33 @@ $tlCfg->tree_filter_cfg->requirements->show_filters = ENABLED;
 // Detailed settings for each mode.
 // Here, the single filter fields can be disabled if not wanted.
 // Also, the choice of advanced filter mode can be disabled.
-$tlCfg->tree_filter_cfg->testcases->execution_mode->filter_tc_id = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->execution_mode->filter_testcase_name = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->execution_mode->filter_toplevel_testsuite = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->execution_mode->filter_keywords = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->execution_mode->filter_priority = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->execution_mode->filter_execution_type = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->execution_mode->filter_assigned_user = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->execution_mode->filter_custom_fields = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->execution_mode->filter_result = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->execution_mode->filter_bugs = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->execution_mode->advanced_filter_mode_choice = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->execution_mode
+      ->filter_tc_id = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->execution_mode
+      ->filter_testcase_name = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->execution_mode
+      ->filter_toplevel_testsuite = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->execution_mode
+      ->filter_keywords = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->execution_mode
+      ->filter_priority = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->execution_mode
+      ->filter_execution_type = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->execution_mode
+      ->filter_assigned_user = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->execution_mode
+      ->filter_custom_fields = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->execution_mode
+      ->filter_result = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->execution_mode
+      ->filter_bugs = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->execution_mode
+      ->filter_aliens = ENABLED;
 
+$tlCfg->tree_filter_cfg->testcases->execution_mode
+      ->advanced_filter_mode_choice = ENABLED;
+
+###
 $tlCfg->tree_filter_cfg->testcases->edit_mode->filter_tc_id = ENABLED;
 $tlCfg->tree_filter_cfg->testcases->edit_mode->filter_testcase_name = ENABLED;
 $tlCfg->tree_filter_cfg->testcases->edit_mode->filter_toplevel_testsuite = ENABLED;

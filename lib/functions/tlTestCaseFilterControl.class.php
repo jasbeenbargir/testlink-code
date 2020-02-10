@@ -276,15 +276,18 @@ class tlTestCaseFilterControl extends tlFilterControl {
    
   private $mode_setting_mapping = 
     array('edit_mode' => array('setting_refresh_tree_on_action'),
-          'execution_mode' => array('setting_testplan','setting_build',
-                                    'setting_platform',
-                                    'setting_exec_tree_counters_logic',
-                                    'setting_refresh_tree_on_action'),
+          'execution_mode' 
+             => array('setting_testplan','setting_build',
+                      'setting_platform',
+                      'setting_exec_tree_counters_logic',
+                      'setting_refresh_tree_on_action'),
           'plan_mode' => array('setting_testplan','setting_build',
                                'setting_platform',
                                'setting_refresh_tree_on_action'),
-          'plan_add_mode' => array('setting_testplan','setting_testsgroupby',
-                                   'setting_refresh_tree_on_action'));
+          'plan_add_mode' => array('setting_testplan',
+                                   'setting_testsgroupby',
+                                   'setting_refresh_tree_on_action')
+        );
 
   /**
    * The mode used. Depending on the feature for which this class will be instantiated.
@@ -544,10 +547,7 @@ class tlTestCaseFilterControl extends tlFilterControl {
 
     foreach ($this->all_settings as $name => $info) {
       $init_method = "init_$name";
-      //echo '<br>'; echo $init_method; echo '<br>';
-      if (in_array($name, $this->mode_setting_mapping[$this->mode]) && 
-        method_exists($this, $init_method)) 
-      {
+      if (in_array($name, $this->mode_setting_mapping[$this->mode]) && method_exists($this, $init_method)) {
         // is valid, configured, exists and therefore can be used, so initialize this setting
         $this->$init_method();
         $at_least_one_active = true;

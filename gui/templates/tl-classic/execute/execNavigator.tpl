@@ -1,9 +1,6 @@
 {* 
 TestLink Open Source Project - http://testlink.sourceforge.net/
 @filesource execNavigator.tpl
-
-@internal revisions
-@since 1.9.13
 *}
 
 {lang_get var="labels"
