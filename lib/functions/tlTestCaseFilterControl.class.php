@@ -999,13 +999,17 @@ class tlTestCaseFilterControl extends tlFilterControl {
       
       case 'plan_add_mode':
         // improved cookiePrefix - 
-        // tree in plan_add_mode is only used for add/removed test cases features 
+        // tree in plan_add_mode is only used for 
+        // add/removed test cases features 
         // and shows all test cases defined within test project, 
-        // but as test cases are added to a specified test plan -> store state for each test plan
+        // but as test cases are added to a 
+        // specified test plan -> store state for each test plan
         // 
-        // usage of wrong values in $this->args->xyz for cookiePrefix instead of correct 
+        // usage of wrong values in $this->args->xyz 
+        // for cookiePrefix instead of correct 
         // values in $filters->setting_xyz
-        $cookie_prefix = "add_remove_tc_tplan_id_{$filters['setting_testplan']}_";
+        $cookie_prefix = 
+          "add_remove_tc_tplan_id_{$filters['setting_testplan']}_";
 
 		    // get filter mode
         $key = 'setting_testsgroupby';
@@ -1035,7 +1039,6 @@ class tlTestCaseFilterControl extends tlFilterControl {
                            'ignore_inactive_testcases' => $ignore_inactive_testcases,
                            'ignore_active_testcases' => $ignore_active_testcases);
       
-
           if ($mode == 'mode_test_suite') {
          	  $tree_menu = generateTestSpecTree($this->db,
                            $this->args->testproject_id,

@@ -35,10 +35,12 @@ function generateTestSpecTree(&$db,$tproject_id, $tproject_name,$linkto,$filters
 
   $chronos[] = microtime(true);
 
-  $tables = tlObjectWithDB::getDBTables(array('tcversions','nodes_hierarchy'));
+  $tables = tlObjectWithDB::getDBTables(
+              array('tcversions','nodes_hierarchy'));
 
   $my = array();
-  $my['options'] = array('forPrinting' => 0, 'hideTestCases' => 0, 
+  $my['options'] = array('forPrinting' => 0, 
+                         'hideTestCases' => 0, 
                          'tc_action_enabled' => 1, 
                          'viewType' => 'testSpecTree',
                          'ignore_inactive_testcases' => null,
@@ -56,15 +58,18 @@ function generateTestSpecTree(&$db,$tproject_id, $tproject_name,$linkto,$filters
                          'importance' => null,
                          'testplan' => null, 
                          'filter_tc_id' => null,
-                         'filter_platforms' => null);
+                         'filter_platforms' => null,
+                         'filter_aliens' => null);
 
   $my['options'] = array_merge($my['options'], (array)$options);
-  $my['options']['showTestCaseID'] = config_get('treemenu_show_testcase_id');
+  $my['options']['showTestCaseID'] = 
+    config_get('treemenu_show_testcase_id');
 
   $my['filters'] = array_merge($my['filters'], (array)$filters);
 
   if( $my['options']['viewType'] == 'testSpecTree' ) {
-    $rr = generateTestSpecTreeNew($db,$tproject_id,$tproject_name,$linkto,$filters,$options);
+    $rr = generateTestSpecTreeNew($db,$tproject_id,$tproject_name,
+                                  $linkto,$filters,$options);
     return $rr;
   }
 
@@ -151,8 +156,6 @@ function generateTestSpecTree(&$db,$tproject_id, $tproject_name,$linkto,$filters
         $attr_map['aliens'] = array();  
       }
     }
-
-
 
     // Important: prepareNode() will make changes to 
     // $test_spec like filtering by test case 
@@ -316,8 +319,10 @@ function generateTestSpecTree(&$db,$tproject_id, $tproject_name,$linkto,$filters
  *
  * @internal revisions
  */
-function prepareNode(&$db,&$node,&$map_node_tccount,$attr_map = null,
-                     &$tplan_tcases = null,$filters=null, $options=null)
+function prepareNode(&$db,&$node,&$map_node_tccount,
+                     $attr_map = null,
+                     &$tplan_tcases = null,$filters=null, 
+                     $options=null)
 {
   static $status_descr_list;
   static $debugMsg;
@@ -362,7 +367,8 @@ function prepareNode(&$db,&$node,&$map_node_tccount,$attr_map = null,
                            'importance' => null, 
                            'executionType' => null,
                            'filter_tc_id' => null,
-                           'filter_platforms' => null);
+                           'filter_platforms' => null,
+                           'filter_aliens' => null);
     
     $my['options'] = array_merge($my['options'], (array)$options);
     $my['filters'] = array_merge($my['filters'], (array)$filters);
@@ -391,11 +397,7 @@ function prepareNode(&$db,&$node,&$map_node_tccount,$attr_map = null,
 
     $enabledFiltersOn['aliens'] = 
       (null != $attr_map 
-       && isset($attr_map['aliens'])
-       && null != $attr_map['aliens']
-       && count($attr_map['aliens']) > 0);
-
-
+       && isset($attr_map['aliens']) );
 
     $filterOnTCVersionAttribute = $enabledFiltersOn['executionType'] || $enabledFiltersOn['importance'];
           

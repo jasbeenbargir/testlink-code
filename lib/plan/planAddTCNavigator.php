@@ -6,8 +6,8 @@
  * @filesource  planAddTCNavigator.php
  * @package   TestLink
  * @author    Martin Havlat
- * @copyright   2005-2013, TestLink community
- * @link    http://www.teamst.org/index.php
+ * @copyright   2005-2020, TestLink community
+ * @link    http://www.testlink.org
  *
  *  Navigator for feature: add Test Cases to a Test Case Suite in Test Plan.
  *  It builds the javascript tree that allow the user select a required part
@@ -26,17 +26,17 @@ testlinkInitPage($db);
 
 $templateCfg = templateConfiguration();
 
-
 // selection of a controller according groupBy mode choice.
 $key = 'setting_testsgroupby';
 
 // now load info from session
 $mode = (isset($_REQUEST[$key])) ? $_REQUEST[$key] : "mode_test_suite";
 
-if($mode == "mode_req_coverage"){
-    $control = new tlTestCaseFilterByRequirementControl($db, 'plan_add_mode');
+if ($mode == "mode_req_coverage"){
+  $control = new tlTestCaseFilterByRequirementControl($db, 
+                   'plan_add_mode');
 } else {
-   $control = new tlTestCaseFilterControl($db, 'plan_add_mode');
+  $control = new tlTestCaseFilterControl($db, 'plan_add_mode');
 }
 
 $gui = initializeGui($control);
@@ -70,8 +70,7 @@ function initializeGui($control)
   
   // This logic is managed from frmWorkArea.php and planAddTC.php
   $gui->loadRightPaneAddTC = isset($_REQUEST['loadRightPaneAddTC']) ? $_REQUEST['loadRightPaneAddTC'] : true;
-  if( isset($_SESSION['loadRightPaneAddTC'][$control->form_token]) )
-  {
+  if( isset($_SESSION['loadRightPaneAddTC'][$control->form_token]) ){
     $gui->loadRightPaneAddTC = false;  
     unset($_SESSION['loadRightPaneAddTC'][$control->form_token]);  
   }  
