@@ -125,7 +125,7 @@ if(!is_null($linked_tcversions)) {
   // will create a record even if the testcase version has not been executed (GET_NO_EXEC)
   //
   // Can be DONE JUST ONCE AFTER write results to DB
-  // --------------------------------------------------------------------------
+  // -------------------------------------------------------------
   // Results to DB
   // 
   // 20130917 - this implementation regarding save_results is confusing.
@@ -300,12 +300,11 @@ if(!is_null($linked_tcversions)) {
 
         case 'limited':
           $nextItem = $tplan_mgr->getTestCaseNextSibling($args->tplan_id,$tcversion_id,$args->platform_id,$opt4sibling);
-          if(!$doSingleStep)
-          { 
-            while (!is_null($nextItem) && !in_array($nextItem['tcase_id'], $args->testcases_to_show)) 
-            {
-              $nextItem = $tplan_mgr->getTestCaseNextSibling($args->tplan_id,$nextItem['tcversion_id'],
-                                                             $args->platform_id,$opt4sibling);
+          if(!$doSingleStep) { 
+            while (!is_null($nextItem) && !in_array($nextItem['tcase_id'], $args->testcases_to_show)) {
+              $nextItem = $tplan_mgr->getTestCaseNextSibling(
+                $args->tplan_id,$nextItem['tcversion_id'],
+                $args->platform_id,$opt4sibling);
             }
           }
         break;
@@ -429,6 +428,24 @@ if(!is_null($linked_tcversions)) {
 
       $gui->kw = $tcase_mgr->getKeywordsByIdCard($idCard,array('output' => 'kwfull'));
 
+      if(!is_null($its)) {
+        $gui->aliens = $tcase_mgr->getAliensByIdCard($idCard);
+        $oc = array();
+        $rx = &$gui->aliens; 
+        $akey = 'alien_id';
+        $ohnooo = "(" . lang_get('reference_not_found') . ")";
+        foreach ($rx as $ik => $el) {
+          $code = $el[$akey];
+          $oc[$code] = $its->getIssue($code);
+          $rx[$ik]['blob'] = $oc[$code];
+          if (null == $rx[$ik]['blob']) {
+            $rx[$ik]['blob'] = new stdClass();
+            $rx[$ik]['blob']->summaryHTMLString = $ohnooo;
+          }
+          $rx[$ik]['name'] = $code;        
+        }
+      }
+
       if(!is_null($cts)) {
         $gui->scripts[$tcversion_id]=$tcase_mgr->get_scripts_for_testcase($cts, $tcversion_id);
       }
@@ -445,14 +462,16 @@ if(!is_null($linked_tcversions)) {
           }      
         }
         $other_info = exec_additional_info($db,$fileRepo,$tcase_mgr,$gui->other_execs,
-                                           $args->tplan_id,$args->tproject_id, 
-                                           $args->issue_tracker_enabled,$its);
+          $args->tplan_id,$args->tproject_id, 
+          $args->issue_tracker_enabled,$its);
                              
         $gui->attachments=$other_info['attachment'];
         $gui->bugs=$other_info['bugs'];
         $gui->other_exec_cfields=$other_info['cfexec_values'];
          
-        // this piece of code is useful to avoid error on smarty template due to undefined value   
+        // this piece of code is useful 
+        // to avoid error on smarty template 
+        // due to undefined value   
         if( is_array($tcversion_id) && (count($gui->other_execs) != count($gui->map_last_exec)) ) {
           foreach($tcversion_id as $version_id) {
             if( !isset($gui->other_execs[$version_id]) ) {
@@ -683,7 +702,8 @@ function init_args(&$dbHandler,$cfgObj) {
   $args->addLinkToTLPrintView = isset($_REQUEST['addLinkToTLPrintView']) ? TRUE : FALSE;
 
   // Do this only on single execution mode
-  // get issue tracker config and object to manage TestLink - BTS integration 
+  // get issue tracker config and object 
+  // to manage TestLink - BTS integration 
   $args->itsCfg = null;
   $its = null;
 
@@ -691,11 +711,12 @@ function init_args(&$dbHandler,$cfgObj) {
   $info = $tproject_mgr->get_by_id($args->tproject_id);
   $args->reqEnabled = intval($info['option_reqs']);
 
-  unset($tproject_mgr);  
   $bug_summary['minLengh'] = 1; 
   $bug_summary['maxLengh'] = 1; 
 
-  if( ($args->issue_tracker_enabled = $info['issue_tracker_enabled']) ) {
+  $args->issue_tracker_enabled = $info['issue_tracker_enabled'];
+  $hasIT = $tproject_mgr->hasIssueTracker($args->tproject_id);
+  if ($args->issue_tracker_enabled || $hasIT) {
     $it_mgr = new tlIssueTracker($dbHandler);
     $args->itsCfg = $it_mgr->getLinkedTo($args->tproject_id);
     $its = $it_mgr->getInterfaceObject($args->tproject_id);
@@ -1570,15 +1591,13 @@ function initializeGui(&$dbHandler,&$argsObj,&$cfgObj,&$tplanMgr,&$tcaseMgr,&$is
                                        'btn_history_on','btn_history_off','history_on');
   $gui->history_status_btn_name = $gui->history_on ? 'btn_history_off' : 'btn_history_on';
 
-
-
   $dummy = $platformMgr->getLinkedToTestplan($argsObj->tplan_id);
   $gui->has_platforms = !is_null($dummy) ? 1 : 0;
     
   $gui->platform_info['id'] = 0;
   $gui->platform_info['name'] = '';
-  if(!is_null($argsObj->platform_id) && $argsObj->platform_id > 0 )
-  { 
+  if (!is_null($argsObj->platform_id) 
+      && $argsObj->platform_id > 0 ) { 
     $gui->platform_info = $platformMgr->getByID($argsObj->platform_id);
   }
   $gui->platform_div_title = lang_get('platform') . ' ' . $gui->platform_info['name'];
@@ -1638,7 +1657,10 @@ function initializeGui(&$dbHandler,&$argsObj,&$cfgObj,&$tplanMgr,&$tcaseMgr,&$is
       $singleVal = array('issuetype' => 'issueType',
                          'issuepriority' => 'issuePriority');
       foreach ($singleVal as $kj => $attr) {
-        $gui->$attr = $itsCfg->$kj;  
+        $gui->$attr = '';
+        if (property_exists($itsCfg, $kj)) {
+          $gui->$attr = $itsCfg->$kj;  
+        }
         $forStep = $attr . 'ForStep';
         $gui->$forStep = $gui->$attr; 
       }  
@@ -1646,7 +1668,10 @@ function initializeGui(&$dbHandler,&$argsObj,&$cfgObj,&$tplanMgr,&$tcaseMgr,&$is
       $multiVal = array('version' => 'artifactVersion',
                         'component' => 'artifactComponent');
       foreach ($multiVal as $kj => $attr) {
-        $gui->$attr = (array)$itsCfg->$kj;  
+        $gui->$attr = array();  
+        if (property_exists($itsCfg, $kj)) {
+          $gui->$attr = $itsCfg->$kj;  
+        }
         $forStep = $attr . 'ForStep';
         $gui->$forStep = $gui->$attr; 
       }  

@@ -123,7 +123,8 @@ updateLinkToLatestTCVersion,
 version,
 warning,
 warning_delete_execution,
-warning_nothing_will_be_saved,file_upload_ko,pleaseOpenTSuite'}
+warning_nothing_will_be_saved,file_upload_ko,
+pleaseOpenTSuite,external_ref'}
 
 
 {$cfg_section=$smarty.template|basename|replace:".tpl":""}

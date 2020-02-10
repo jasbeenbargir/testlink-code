@@ -9925,7 +9925,7 @@ class testcase extends tlObjectWithAttachments {
     }
     else {
       $key4log = 
-        array_keys((array)$this->get_aliens_map($sf->tcase_id,
+        array_keys((array)$this->getAliens($sf->tcase_id,
           $sf->tcversion_id));
     }
 
@@ -9948,5 +9948,14 @@ class testcase extends tlObjectWithAttachments {
 
     return $result;
   }
+
+  /**
+   *
+   */
+  function getAliensByIdCard($idCard) {
+    return $this->getAliens($idCard['tcase_id'],
+                            $idCard['tcversion_id']);
+  }
+
 
 }  // Class end

@@ -428,18 +428,16 @@ class tlIssueTracker extends tlObject
     // and spaces
     // fortunatelly this is trim standard behaviour
     $k2san = array('name');
-    foreach($k2san as $key)
-    { 
+    foreach($k2san as $key) { 
       $value = trim($obj->$key);
-      switch($key)
-      {
+      switch ($key) {
         case 'name':    
           $sobj->$key = ($value == '') ? null : $value;
         break;  
       }
       
-      if( !is_null($sobj->$key) )
-      {
+      if( property_exists($sobj, $key) 
+          && !is_null($sobj->$key) ) {
         $sobj->$key = $this->db->prepare_string($obj->$key);
       }     
       
@@ -627,7 +625,7 @@ class tlIssueTracker extends tlObject
 
   /*
    *
-     *
+   *
    */
   function getLinkedTo($tprojectID)
   {
@@ -753,5 +751,4 @@ class tlIssueTracker extends tlObject
 
     return $op;
   }  
-
 } // end class

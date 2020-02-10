@@ -88,7 +88,9 @@ class tlPlatform extends tlObjectWithDB
    * @return array 
    */
   public function getByID($id,$opt=null) {
-    $idSet = implode(',',(array)$id);
+
+    $items = (array)$id;
+    $idSet = implode(',',$items);
     $options = array('fields' => $this->stdFields,
                      'accessKey' => null);
     $options = array_merge($options,(array)$opt);
@@ -104,7 +106,7 @@ class tlPlatform extends tlObjectWithDB
       break;
 
       default:
-        if (count($idSet) == 1) {
+        if (count($items) == 1) {
           return $this->db->fetchFirstRow($sql);
         }
         $accessKey = 'id';

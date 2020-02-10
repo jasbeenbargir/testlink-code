@@ -119,7 +119,6 @@ Author : franciscom
       {/if}
     {/if} {* if $args_enable_custom_field *}
     {* ------------------------------------------------------ *}
-    
       <td colspan="{$tableColspan}">
       {if $args_testplan_design_time_cf[$testcase_id] != ''}
           <div id="cfields_testplan_design_time_tcversionid_{$tcversion_id}" class="custom_field_container" 
@@ -142,7 +141,8 @@ Author : franciscom
     </tr>
 
     {* TestScript Links (if any) *}
-    {if isset($gui->scripts[$tcversion_id]) && !is_null($gui->scripts[$tcversion_id])}
+    {if isset($gui->scripts[$tcversion_id]) 
+      && !is_null($gui->scripts[$tcversion_id])}
       <tr style="background-color: #dddddd">
         {include file="inc_show_scripts_table.tpl"
          scripts_map=$gui->scripts[$tcversion_id]
@@ -162,6 +162,26 @@ Author : franciscom
           {/foreach}
         </td>
       </tr>
+    {/if}
+
+    {if isset($gui->aliens)}
+      <tr><td>&nbsp;</td><tr>
+
+      <tr>
+        <td colspan="{$tableColspan}">
+          <b>{$args_labels.external_ref}</b>
+        </td>  
+      </tr>
+      {foreach item=et from=$gui->aliens name=ufo}
+        <tr>
+          <td>
+            {$et.name|escape}
+          </td>
+          <td>    
+           {$et.blob->summaryHTMLString} 
+          </td>
+        </tr>
+      {/foreach}
     {/if}
 
     </table>

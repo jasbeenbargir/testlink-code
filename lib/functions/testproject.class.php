@@ -368,8 +368,7 @@ protected function getTestProject($condition = null, $opt=null)
   }
   
   $rs = $this->db->get_recordset($sql);
-  if($doParse)
-  {
+  if ($doParse) {
     $this->parseTestProjectRecordset($rs);
   }
   return $rs;
@@ -4314,6 +4313,23 @@ function getActiveTestPlansCount($id)
       $this->db->fetchRowsIntoMap($sql,'testcase_id') : null;
 
     return $hits;
+  }
+
+  /*
+   *
+   *
+   */
+  function hasIssueTracker($id)
+  {
+    $debugMsg = 'Class:' . __CLASS__ . ' - Method: ' . __FUNCTION__;
+    $sql = "/* $debugMsg */ 
+           SELECT TPIT.testproject_id
+           FROM {$this->tables['testproject_issuetracker']} TPIT
+           WHERE TPIT.testproject_id = " . intval($id);
+
+    $ret = $this->db->get_recordset($sql);
+    $status =  (!is_null($ret) && (count($ret) == 1));
+    return $status;
   }
 
 

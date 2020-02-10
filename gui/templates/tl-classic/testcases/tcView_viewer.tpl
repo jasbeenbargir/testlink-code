@@ -20,7 +20,7 @@ viewer for test case in test specification
              requirement,btn_show_exec_history,btn_resequence_steps,link_unlink_requirements,
              code_mgmt,code_link_tl_to_cts,can_not_edit_frozen_tc,
              testcase_operations,testcase_version_operations,
-             goto_execute,aliens"}
+             goto_execute,aliens,external_ref"}
 
 {lang_get s='warning_delete_step' var="warning_msg"}
 {lang_get s='delete' var="del_msgbox_title"}
