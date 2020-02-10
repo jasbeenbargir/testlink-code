@@ -904,6 +904,9 @@ class testcase extends tlObjectWithAttachments {
     static $cfg;
     static $reqMgr;
 
+    $debugMsg = 'Class:' . __CLASS__ 
+                . ' - Method: ' . __FUNCTION__;
+
     if(!$cfg) {
       $cfg = config_get('spec_cfg');
       $reqMgr = new requirement_mgr($this->db);
