@@ -229,7 +229,8 @@ class tlTestCaseFilterControl extends tlFilterControl {
                                 'filter_assigned_user',
                                 'filter_custom_fields',
                                 'filter_result',
-                                'filter_bugs'),
+                                'filter_bugs',
+                                'filter_aliens'),
           'plan_mode' => array('filter_tc_id',
                            'filter_testcase_name',
                            'filter_toplevel_testsuite',
@@ -239,7 +240,8 @@ class tlTestCaseFilterControl extends tlFilterControl {
                            // enabled user filter when assigning testcases
                            'filter_assigned_user',
                            'filter_custom_fields',
-                           'filter_result'),
+                           'filter_result',
+                           'filter_aliens'),
           'plan_add_mode' => array('filter_tc_id',
                                'filter_testcase_name',
                                'filter_toplevel_testsuite',
@@ -248,7 +250,8 @@ class tlTestCaseFilterControl extends tlFilterControl {
                                'filter_execution_type',
                                'filter_workflow_status',
                                'filter_custom_fields',
-                               'filter_platforms'));
+                               'filter_platforms',
+                               'filter_aliens'));
 
   /**
    * This array contains all possible settings. It is used as a helper
@@ -1903,14 +1906,24 @@ class tlTestCaseFilterControl extends tlFilterControl {
   {
     $key = str_replace('init_','',__FUNCTION__);
     $selection = $this->args->{$key};
+    $useSelection = true;
+
     if (!$selection || $this->args->reset_filters) {
       $selection = null;
     } 
     else {
       $this->do_filtering = true;
+      if (strpos($selection,',') !== FALSE) {
+        $iset = explode(',',$selection);
+        $useSelection = false;
+      }  
     }
-    
-    $this->filters[$key] = array('selected' => $selection);
+
+    if ($useSelection) {
+      $this->filters[$key] = array('selected' => $selection);
+    } else {
+      $this->filters[$key] = array('selected' => $iset);      
+    }
     $this->active_filters[$key] = $selection;
   } 
 
@@ -2158,7 +2171,8 @@ class tlTestCaseFilterControl extends tlFilterControl {
       $this->platform_mgr = new tlPlatform($this->db);
     }
     $key = 'filter_platforms';
-    $special = array(-1 => $this->option_strings['without_platforms'], 
+    $special = array(-1 => 
+                      $this->option_strings['without_platforms'], 
                      0 => $this->option_strings['any']);
 
     // set selection to default (any), only change 

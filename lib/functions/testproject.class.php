@@ -4075,145 +4075,145 @@ function getActiveTestPlansCount($id)
     return $rs;
   }
 
-/**
- *
- */
-function getPlatformsLatestTCV($tproject_id, $platform_id=0) {
+  /**
+   *
+   */
+  function getPlatformsLatestTCV($tproject_id, $platform_id=0) {
 
-  $filter = '' ;
-  $ltcvJoin = " JOIN {$this->views['latest_tcase_version_id']} LTCV
-                ON LTCV.tcversion_id = TPL.tcversion_id ";
+    $filter = '' ;
+    $ltcvJoin = " JOIN {$this->views['latest_tcase_version_id']} LTCV
+                  ON LTCV.tcversion_id = TPL.tcversion_id ";
 
-  if( is_array($platform_id) ) {
-    $filter = " AND platform_id IN (" . implode(',',$platform_id) . ")";   
-  }
-  else if( $platform_id > 0 ) {
-    $filter = " AND platform_id = {$platform_id} ";
-  }
-  
-  $items = null;
-  $sql = " SELECT TPL.testcase_id,TPL.platform_id,PL.name
-           FROM {$this->tables['platforms']} PL
-           JOIN {$this->tables['testcase_platforms']} TPL
-           ON TPL.platform_id = PL.id
-           {$ltcvJoin}
-           WHERE PL.testproject_id = {$tproject_id}
-           {$filter}
-           ORDER BY name ASC ";
+    if( is_array($platform_id) ) {
+      $filter = " AND platform_id IN (" . implode(',',$platform_id) . ")";   
+    }
+    else if( $platform_id > 0 ) {
+      $filter = " AND platform_id = {$platform_id} ";
+    }
+    
+    $items = null;
+    $sql = " SELECT TPL.testcase_id,TPL.platform_id,PL.name
+             FROM {$this->tables['platforms']} PL
+             JOIN {$this->tables['testcase_platforms']} TPL
+             ON TPL.platform_id = PL.id
+             {$ltcvJoin}
+             WHERE PL.testproject_id = {$tproject_id}
+             {$filter}
+             ORDER BY name ASC ";
 
-  $items = $this->db->fetchMapRowsIntoMap($sql,'testcase_id','platform_id');
+    $items = $this->db->fetchMapRowsIntoMap($sql,'testcase_id','platform_id');
 
-  return $items;
-} //end function
+    return $items;
+  } //end function
 
 
-/**
- * @used-by getTestSpecTree()@treeMenu.inc.php
- * -1 => WITHOUT PLATFORMS
- * 
- */
-function getTCLatestVersionFilteredByPlatforms($tproject_id, $platform_id=0) {
-  $platSet = (array)$platform_id;
-  $sql = null;
-  $tcaseSet = array();
-  $delTT = false;
-  $hasTCases = false;
+  /**
+   * @used-by getTestSpecTree()@treeMenu.inc.php
+   * -1 => WITHOUT PLATFORMS
+   * 
+   */
+  function getTCLatestVersionFilteredByPlatforms($tproject_id, $platform_id=0) {
+    $platSet = (array)$platform_id;
+    $sql = null;
+    $tcaseSet = array();
+    $delTT = false;
+    $hasTCases = false;
 
-  // -1 => WITHOUT PLATFORMS
-  $getWithOutPlatforms = in_array(-1,$platSet); 
-  if( $getWithOutPlatforms ) {  
-    $this->get_all_testcases_id($tproject_id,$tcaseSet);
-    if( ($hasTCases = count($tcaseSet) > 0) ) {
-      $delTT = true;
-      $tt = 'temp_tcset_' . $tproject_id . md5(microtime());
-      $sql = "CREATE TEMPORARY TABLE IF NOT EXISTS $tt AS 
-              ( SELECT id FROM {$this->tables['nodes_hierarchy']} 
-                LIMIT 0 )";
-      $this->db->exec_query($sql);
-      $a4ins = array_chunk($tcaseSet, 2000); // MAGIC
-      foreach($a4ins as $chu) {
-        $sql = "INSERT INTO $tt (id) VALUES (" .
-               implode('),(',$chu) . ")"; 
+    // -1 => WITHOUT PLATFORMS
+    $getWithOutPlatforms = in_array(-1,$platSet); 
+    if( $getWithOutPlatforms ) {  
+      $this->get_all_testcases_id($tproject_id,$tcaseSet);
+      if( ($hasTCases = count($tcaseSet) > 0) ) {
+        $delTT = true;
+        $tt = 'temp_tcset_' . $tproject_id . md5(microtime());
+        $sql = "CREATE TEMPORARY TABLE IF NOT EXISTS $tt AS 
+                ( SELECT id FROM {$this->tables['nodes_hierarchy']} 
+                  LIMIT 0 )";
         $this->db->exec_query($sql);
+        $a4ins = array_chunk($tcaseSet, 2000); // MAGIC
+        foreach($a4ins as $chu) {
+          $sql = "INSERT INTO $tt (id) VALUES (" .
+                 implode('),(',$chu) . ")"; 
+          $this->db->exec_query($sql);
+        }
       }
     }
-  }
 
-  if( $getWithOutPlatforms && $hasTCases) {  
-    $sql = " /* WITHOUT PLATFORMS */  
-             SELECT TCVNO_PL.testcase_id FROM
-             {$this->views['tcversions_without_platforms']} TCVNO_PL   
-             JOIN {$this->views['latest_tcase_version_id']} LTVC
-             ON LTVC.tcversion_id = TCVNO_PL.id
-             JOIN $tt TT ON TT.id = TCVNO_PL.testcase_id ";
-  } else {  
-    $filter = " platform_id IN (" . implode(',',$platSet) . ")";
-    $filter_type = 'And';
-    switch($filter_type) {
-      case 'NotLinked':
-        if($hasTCases) {
-          $sql = " /* WITHOUT SPECIFIC KEYWORDS */  
-                   SELECT NHTCV.parent_id AS testcase_id  
-                   FROM {$this->tables['nodes_hierarchy']} NHTCV   
-                   JOIN {$this->views['latest_tcase_version_id']} LTCV 
-                   ON NHTCV.id = LTCV.tcversion_id 
-                   JOIN $tt TT ON TT.id = NHTCV.parent_id 
-                   WHERE NOT EXISTS
-                   (SELECT 1 FROM {$this->tables['testcase_platforms']} TCPL  
-                   WHERE TCPL.tcversion_id = LTCV.tcversion_id 
-                   AND {$filter} )";
-        } 
-      break;
-
-
-      case 'And':
-        // MAX(TK.testcase_id) needed to be able to extract
-        // Test case id.
-        $sqlCount = " /* SQL COUNT */ " .
-                    " SELECT COUNT(TPL.tcversion_id) AS HITS,
-                             MAX(TPL.testcase_id) AS testcase_id,
-                             TPL.tcversion_id
-                      FROM {$this->tables['platforms']} PL
-                      JOIN {$this->tables['testcase_platforms']} TPL
-                      ON platform_id = PL.id
-                      JOIN {$this->views['latest_tcase_version_id']} LTCV
-                      ON LTCV.tcversion_id = TPL.tcversion_id
-                      WHERE testproject_id = {$tproject_id}
-                      AND {$filter}
-                      GROUP BY TPL.tcversion_id ";
-
-        $sql = "/* Filter Type = AND */
-                SELECT PLTFOXDOG.testcase_id 
-                FROM ( $sqlCount ) AS PLTFOXDOG 
-                WHERE PLTFOXDOG.HITS=" . count($platform_id);
-      break;
+    if( $getWithOutPlatforms && $hasTCases) {  
+      $sql = " /* WITHOUT PLATFORMS */  
+               SELECT TCVNO_PL.testcase_id FROM
+               {$this->views['tcversions_without_platforms']} TCVNO_PL   
+               JOIN {$this->views['latest_tcase_version_id']} LTVC
+               ON LTVC.tcversion_id = TCVNO_PL.id
+               JOIN $tt TT ON TT.id = TCVNO_PL.testcase_id ";
+    } else {  
+      $filter = " platform_id IN (" . implode(',',$platSet) . ")";
+      $filter_type = 'And';
+      switch($filter_type) {
+        case 'NotLinked':
+          if($hasTCases) {
+            $sql = " /* WITHOUT SPECIFIC KEYWORDS */  
+                     SELECT NHTCV.parent_id AS testcase_id  
+                     FROM {$this->tables['nodes_hierarchy']} NHTCV   
+                     JOIN {$this->views['latest_tcase_version_id']} LTCV 
+                     ON NHTCV.id = LTCV.tcversion_id 
+                     JOIN $tt TT ON TT.id = NHTCV.parent_id 
+                     WHERE NOT EXISTS
+                     (SELECT 1 FROM {$this->tables['testcase_platforms']} TCPL  
+                     WHERE TCPL.tcversion_id = LTCV.tcversion_id 
+                     AND {$filter} )";
+          } 
+        break;
 
 
-      case 'Or':
-      default:
-        $sql = " /* Filter Type = OR */ " .
-               " SELECT TK.testcase_id " .
-               " FROM {$this->tables['testcase_platforms']} TPL" .
-               " JOIN {$this->views['latest_tcase_version_id']} LTVC " .
-               " ON LTVC.tcversion_id = TPL.tcversion_id " .
-               " JOIN {$this->tables['platforms']} PL " .
-               " ON PL.id = TK.platform_id " .
-               " WHERE {$filter} " .
-               " AND PL.testproject_id=" . $tproject_id;
-      break;
+        case 'And':
+          // MAX(TK.testcase_id) needed to be able to extract
+          // Test case id.
+          $sqlCount = " /* SQL COUNT */ " .
+                      " SELECT COUNT(TPL.tcversion_id) AS HITS,
+                               MAX(TPL.testcase_id) AS testcase_id,
+                               TPL.tcversion_id
+                        FROM {$this->tables['platforms']} PL
+                        JOIN {$this->tables['testcase_platforms']} TPL
+                        ON platform_id = PL.id
+                        JOIN {$this->views['latest_tcase_version_id']} LTCV
+                        ON LTCV.tcversion_id = TPL.tcversion_id
+                        WHERE testproject_id = {$tproject_id}
+                        AND {$filter}
+                        GROUP BY TPL.tcversion_id ";
+
+          $sql = "/* Filter Type = AND */
+                  SELECT PLTFOXDOG.testcase_id 
+                  FROM ( $sqlCount ) AS PLTFOXDOG 
+                  WHERE PLTFOXDOG.HITS=" . count($platform_id);
+        break;
+
+
+        case 'Or':
+        default:
+          $sql = " /* Filter Type = OR */ " .
+                 " SELECT TK.testcase_id " .
+                 " FROM {$this->tables['testcase_platforms']} TPL" .
+                 " JOIN {$this->views['latest_tcase_version_id']} LTVC " .
+                 " ON LTVC.tcversion_id = TPL.tcversion_id " .
+                 " JOIN {$this->tables['platforms']} PL " .
+                 " ON PL.id = TK.platform_id " .
+                 " WHERE {$filter} " .
+                 " AND PL.testproject_id=" . $tproject_id;
+        break;
+      }
     }
+
+    $hits = !is_null($sql) ? $this->db->fetchRowsIntoMap($sql,'testcase_id') : null;
+
+    // clean up
+    if( $delTT ) {
+      $sql = "DROP TABLE IF EXISTS $tt";
+      $this->db->exec_query($sql);
+    }
+
+    return $hits;
   }
-
-  $hits = !is_null($sql) ? $this->db->fetchRowsIntoMap($sql,'testcase_id') : null;
-
-  // clean up
-  if( $delTT ) {
-    $sql = "DROP TABLE IF EXISTS $tt";
-    $this->db->exec_query($sql);
-  }
-
-  return $hits;
-}
 
   /**
    *
@@ -4226,6 +4226,94 @@ function getTCLatestVersionFilteredByPlatforms($tproject_id, $platform_id=0) {
             WHERE TPRJ.id=" . intval($id);
     $rs = $dbh->get_recordset($sql);
     return is_null($rs) ? $rs : $rs[0]['name'];
+  }
+
+  /**
+   *
+   */
+  function getAliensLatestTCV($tproject_id, $alien_id=0) {
+
+    $filter = '' ;
+    $ltcvJoin = 
+      " JOIN {$this->views['latest_tcase_version_id']} LTCV
+        ON LTCV.tcversion_id = TAL.tcversion_id ";
+
+    if( is_array($alien_id) ) {
+      $filter = " AND alien_id IN ('" . 
+                implode("','",$alien_id) . "'')";   
+    }
+    else if ($alien_id > 0 || ('' !=trim($alien_id))) {
+      $filter = " AND alien_id = '" 
+                . $this->db->prepare_string($alien_id) . "'";
+    }
+    
+    $items = null;
+    $sql = " SELECT TAL.testcase_id,TAL.alien_id
+             FROM {$this->tables['testcase_aliens']} TAL
+             {$ltcvJoin}
+             WHERE TAL.testproject_id = {$tproject_id}
+             {$filter}
+             ORDER BY alien_id ASC ";
+    $items = $this->db->fetchMapRowsIntoMap($sql,
+               'testcase_id','alien_id');
+
+    return $items;
+  } //end function
+
+  /**
+   * @used-by getTestSpecTree()@treeMenu.inc.php
+   * -1 => WITHOUT PLATFORMS
+   * 
+   */
+  function getTCLatestVersionFilteredByAliens($tproject_id, $alien_id=null) {
+
+    $itemSet = (array)$alien_id;
+    $sql = null;
+    $tcaseSet = array();
+
+    // -1 => WITHOUT PLATFORMS
+    $inClause = implode("','",$itemSet);
+    $filter = " alien_id IN ('{$inClause}')";
+    $filter_type = 'And';
+
+    switch($filter_type) {
+      case 'And':
+        // MAX(TAL.testcase_id) needed to be able to extract
+        // Test case id.
+        $sqlCount = " /* SQL COUNT */ 
+          SELECT COUNT(TAL.tcversion_id) AS HITS,
+                 MAX(TAL.testcase_id) AS testcase_id,
+                 TAL.tcversion_id
+          FROM {$this->tables['testcase_aliens']} TAL
+          JOIN {$this->views['latest_tcase_version_id']} LTCV
+          ON LTCV.tcversion_id = TAL.tcversion_id
+          WHERE TAL.testproject_id = {$tproject_id}
+          AND {$filter}
+          GROUP BY TAL.tcversion_id ";
+
+        $sql = "/* Filter Type = AND */
+                SELECT PLTFOXDOG.testcase_id 
+                FROM ( $sqlCount ) AS PLTFOXDOG 
+                WHERE PLTFOXDOG.HITS=" . count($alien_id);
+      break;
+      
+      case 'Or':
+      default:
+        $sql = " /* Filter Type = OR */
+                   SELECT TAL.testcase_id 
+                   FROM {$this->tables['testcase_aliens']} TAL
+                   JOIN 
+                   {$this->views['latest_tcase_version_id']} LTVC
+                   ON LTVC.tcversion_id = TAL.tcversion_id 
+                   WHERE {$filter} 
+                   AND TAL.testproject_id=" . $tproject_id;
+      break;
+    }  
+
+    $hits = !is_null($sql) ? 
+      $this->db->fetchRowsIntoMap($sql,'testcase_id') : null;
+
+    return $hits;
   }
 
 

@@ -114,7 +114,6 @@ if($do_display) {
   // Add Test Cases to Test plan - Right pane does not honor custom field filter
   $testCaseSet = $args->control_panel['filter_tc_id'];   
   if(!is_null($keywordsFilter) ) { 
-    
     // With this pieces we implement the AND type of keyword filter.
     $keywordsTestCases = 
       $tproject_mgr->getKeywordsLatestTCV($args->tproject_id,
@@ -139,7 +138,8 @@ if($do_display) {
                    'importance' => $args->importance,
                    'workflow_status' => $args->workflow_status,
                    'cfields' => null, 'tcase_name' => null,
-                   'platforms' => null);
+                   'platforms' => null,
+                   'aliens' => $args->alien_id);
 
   if( isset($args->control_panel['filter_custom_fields']) ) {
     $filters['cfields'] = $args->control_panel['filter_custom_fields']; 
@@ -155,6 +155,10 @@ if($do_display) {
       $args->control_panel['filter_platforms']; 
   }
 
+  if( isset($args->control_panel['filter_aliens']) ) {
+    $filters['aliens'] = 
+      $args->control_panel['filter_aliens']; 
+  }
 
   $out = gen_spec_view($db,'testPlanLinking',
                        $args->tproject_id,$args->object_id,
@@ -508,11 +512,19 @@ function init_args(&$tproject_mgr)
     $args->platform_id = $pageCache[$ak];
   }
   
+  $args->alien_id = 0;
+  $ak = 'filter_aliens';
+  if (isset($pageCache[$ak])) {
+    $args->alien_id = $pageCache[$ak];
+  }
+
+  /*
   $args->keywordsFilterType = null;
   $ak = 'filter_keywords_filter_type';
   if (isset($pageCache[$ak])) {
     $args->keywordsFilterType = $pageCache[$ak];
   }
+  */
 
 
   $ak = 'filter_workflow_status';

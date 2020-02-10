@@ -92,9 +92,9 @@ function generateTestSpecTree(&$db,$tproject_id, $tproject_name,$linkto,$filters
   // in order provide what user WANTS.
   // This is right way to go.
   // 
-  $exclude_branches = isset($filters['filter_toplevel_testsuite']) && 
-                      is_array($filters['filter_toplevel_testsuite']) ?
-                      $filters['filter_toplevel_testsuite'] : null;
+  $exclude_branches = isset($filters['filter_toplevel_testsuite']) 
+    && is_array($filters['filter_toplevel_testsuite']) 
+       ? $filters['filter_toplevel_testsuite'] : null;
   
   $tcase_prefix = $tproject_mgr->getTestCasePrefix($tproject_id) . 
                   $glueChar;
@@ -139,6 +139,21 @@ function generateTestSpecTree(&$db,$tproject_id, $tproject_name,$linkto,$filters
       }
     }
 
+    // Same logic for external references
+    $attr_map['aliens'] = null;  // means no filter
+    if(!is_null($my['filters']['filter_aliens'])) {
+      $attr_map['aliens'] = 
+        $tproject_mgr->getAliensLatestTCV($tproject_id,
+           $my['filters']['filter_aliens']);
+
+      if( is_null($attr_map['aliens']) ) {
+        // means that tree will be EMPTY
+        $attr_map['aliens'] = array();  
+      }
+    }
+
+
+
     // Important: prepareNode() will make changes to 
     // $test_spec like filtering by test case 
     // keywords using $attr_map['keywords'];
@@ -158,10 +173,11 @@ function generateTestSpecTree(&$db,$tproject_id, $tproject_name,$linkto,$filters
     }
     
     // TICKET 4496: added inactive testcase filter
-    $pnOptions = array('hideTestCases' => $my['options']['hideTestCases'], 
+    $pnOptions = array('hideTestCases' 
+                         => $my['options']['hideTestCases'], 
                        'viewType' => $my['options']['viewType'],  
-                       'ignoreInactiveTestCases' => 
-                         $my['options']['ignore_inactive_testcases'],
+                       'ignoreInactiveTestCases' 
+                         => $my['options']['ignore_inactive_testcases'],
                        'ignoreActiveTestCases' => 
                          $my['options']['ignore_active_testcases']);
 
@@ -332,7 +348,8 @@ function prepareNode(&$db,&$node,&$map_node_tccount,$attr_map = null,
     $status_descr_list[] = 'testcase_count';
     
     $my = array();
-    $my['options'] = array('hideTestCases' => 0, 'showTestCaseID' => 1, 
+    $my['options'] = array('hideTestCases' => 0, 
+                           'showTestCaseID' => 1, 
                            'viewType' => 'testSpecTree',
                            'getExternalTestCaseID' => 1,
                            'ignoreInactiveTestCases' => 0,
@@ -342,7 +359,8 @@ function prepareNode(&$db,&$node,&$map_node_tccount,$attr_map = null,
     // added importance here because of "undefined" error in event log
     $my['filters'] = array('status' => null, 
                            'assignedTo' => null, 
-                           'importance' => null, 'executionType' => null,
+                           'importance' => null, 
+                           'executionType' => null,
                            'filter_tc_id' => null,
                            'filter_platforms' => null);
     
@@ -370,6 +388,13 @@ function prepareNode(&$db,&$node,&$map_node_tccount,$attr_map = null,
        && isset($attr_map['platforms'])
        && null != $attr_map['platforms']
        && count($attr_map['platforms']) > 0);
+
+    $enabledFiltersOn['aliens'] = 
+      (null != $attr_map 
+       && isset($attr_map['aliens'])
+       && null != $attr_map['aliens']
+       && count($attr_map['aliens']) > 0);
+
 
 
     $filterOnTCVersionAttribute = $enabledFiltersOn['executionType'] || $enabledFiltersOn['importance'];
@@ -409,6 +434,9 @@ function prepareNode(&$db,&$node,&$map_node_tccount,$attr_map = null,
       
       ($enabledFiltersOn['platforms'] && 
        !isset($attr_map['platforms'][$node['id']])) ||
+
+      ($enabledFiltersOn['aliens'] && 
+       !isset($attr_map['aliens'][$node['id']])) ||
 
       ($enabledFiltersOn['testcase_name'] &&  
               stripos($node['name'], $my['filters']['filter_testcase_name']) === FALSE)  ||
@@ -504,8 +532,7 @@ function prepareNode(&$db,&$node,&$map_node_tccount,$attr_map = null,
         
         $result = $db->exec_query($sql);
         $myrow = $db->fetch_array($result);
-        if($myrow['num_active_versions'] == 0)
-        {
+        if ($myrow['num_active_versions'] == 0) {
           $node = null;
           //$node = REMOVEME;
         }
@@ -2330,7 +2357,9 @@ function generateTestSpecTreeNew(&$db,$tproject_id, $tproject_name,$linkto,$filt
   
 
   $my['filters'] = array('keywords' => null, 
-                         'plaftorms' => null,'testplan' => null);
+                         'plaftorms' => null,
+                         'aliens' => null,
+                         'testplan' => null);
 
   $my['options'] = array_merge($my['options'], (array)$options);
   $my['options']['showTestCaseID'] = config_get('treemenu_show_testcase_id');
@@ -2372,14 +2401,15 @@ function generateTestSpecTreeNew(&$db,$tproject_id, $tproject_name,$linkto,$filt
         $test_spec['childNodes'],
         $my['filters']['filter_custom_fields'],$hash_descr_id);
     }
-    
-    $pnFilters = array('keywords' => $my['filters']['filter_keywords'],
-                       'keywords_filter_type' => 
-                         $my['filters']['filter_keywords_filter_type'],
-                       'platforms' => $my['filters']['filter_platforms'],
-                       );
 
-    $pnOptions = array('hideTestCases' => $my['options']['hideTestCases'],
+    $fk = array('keywords','keywords_filter_type',
+                'platforms','aliens');
+    foreach ($fk as $tf) {
+      $pnFilters[$tf] = $my['filters']['filter_' . $tf]; 
+    }                 
+
+    $pnOptions = array('hideTestCases' => 
+                         $my['options']['hideTestCases'],
                        'ignoreInactiveTestCases' => 
                          $my['options']['ignore_inactive_testcases'],
                        'ignoreActiveTestCases' => 
@@ -2549,6 +2579,8 @@ function prepareTestSpecNode(&$db, &$tprojectMgr,$tprojectID,&$node,&$map_node_t
   static $tcFilterByKeywords;
   static $doFilterOn;
   static $tcFilterByPlatforms;
+  static $tcFilterByAliens;
+
 
   if (!$tables) {
     $debugMsg = 'Class: ' . __CLASS__ . ' - ' . 'Method: ' . __FUNCTION__ . ' - ';
@@ -2558,7 +2590,9 @@ function prepareTestSpecNode(&$db, &$tprojectMgr,$tprojectID,&$node,&$map_node_t
                            array_flip($tprojectMgr->tree_manager->get_available_node_types()));
     $my = array();
     $my['options'] = array('hideTestCases' => 0);
-    $my['filters'] = array('keywords' => null, 'platforms' => null);
+    $my['filters'] = array('keywords' => null, 
+                           'platforms' => null,
+                           'aliens' => null);
 
     $my['options'] = array_merge($my['options'], (array)$options);
     $my['filters'] = array_merge($my['filters'], (array)$filters);
@@ -2596,12 +2630,29 @@ function prepareTestSpecNode(&$db, &$tprojectMgr,$tprojectID,&$node,&$map_node_t
     }
     
 
+    $doFilterOn['aliens'] = !is_null($my['filters']['aliens'])
+                               && (intval($my['filters']['aliens']) > 0);
+    if ($doFilterOn['aliens']) {
+      $tcFilterByAliens = 
+        $tprojectMgr->getTCLatestVersionFilteredByAliens(
+                        $tprojectID,$my['filters']['aliens']);
+
+      if( is_null($tcFilterByAliens) ) {
+        // tree will be empty
+        $node = null;
+        $tcase_counters['testcase_count'] = 0;
+        return($tcase_counters);
+      }
+    }
+
+
     // Critic for logic that prune empty branches
     // TICKET 4353: added active/inactive filter
     $filtersApplied = $doFilterOn['keywords'] || 
       $my['options']['ignoreInactiveTestCases'] || 
       $my['options']['ignoreActiveTestCases'] || 
-      $doFilterOn['platforms'];
+      $doFilterOn['platforms'] || 
+      $doFilterOn['aliens'];
   }
     
   $tcase_counters['testcase_count'] = 0;
@@ -2637,8 +2688,12 @@ function prepareTestSpecNode(&$db, &$tprojectMgr,$tprojectID,&$node,&$map_node_t
    if( $my['options']['hideTestCases'] || $remove_node ||
        ($doFilterOn['keywords'] && 
         !isset($tcFilterByKeywords[$node['id']])) ||
+       
        ($doFilterOn['platforms'] && 
-        !isset($tcFilterByPlatforms[$node['id']])) ) {
+        !isset($tcFilterByPlatforms[$node['id']])) ||
+
+       ($doFilterOn['aliens'] && 
+        !isset($tcFilterByAliens[$node['id']])) ) {
      $node = REMOVEME;
    } else {
       // needed to avoid problems when using json_encode with EXTJS
@@ -2649,7 +2704,7 @@ function prepareTestSpecNode(&$db, &$tprojectMgr,$tprojectID,&$node,&$map_node_t
   }  // if($node_type == 'testcase')
   
   
-  // ================================================================
+  // ==============================================================
   if( !is_null($node) && isset($node['childNodes']) && is_array($node['childNodes']) ) {
   
     // node has to be a Test Suite ?

@@ -1844,18 +1844,34 @@ $tlCfg->tree_filter_cfg->testcases->edit_mode
 
 #
 # Test Cases PLAN MODE
-$tlCfg->tree_filter_cfg->testcases->plan_mode->filter_tc_id = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->plan_mode->filter_testcase_name = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->plan_mode->filter_toplevel_testsuite = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->plan_mode->filter_keywords = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->plan_mode->filter_priority = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->plan_mode->filter_execution_type = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->plan_mode->filter_assigned_user = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->plan_mode->filter_custom_fields = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->plan_mode->filter_result = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->plan_mode->advanced_filter_mode_choice = ENABLED;
-$tlCfg->tree_filter_cfg->testcases->plan_mode->setting_build_inactive_out = FALSE;
-$tlCfg->tree_filter_cfg->testcases->plan_mode->setting_build_close_out = FALSE;
+$tlCfg->tree_filter_cfg->testcases->plan_mode
+      ->filter_tc_id = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->plan_mode
+      ->filter_testcase_name = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->plan_mode
+      ->filter_toplevel_testsuite = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->plan_mode
+      ->filter_keywords = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->plan_mode
+      ->filter_priority = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->plan_mode
+      ->filter_execution_type = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->plan_mode
+      ->filter_assigned_user = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->plan_mode
+      ->filter_custom_fields = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->plan_mode
+      ->filter_result = ENABLED;
+
+$tlCfg->tree_filter_cfg->testcases->plan_mode
+      ->filter_aliens = ENABLED;
+
+$tlCfg->tree_filter_cfg->testcases->plan_mode
+      ->advanced_filter_mode_choice = ENABLED;
+$tlCfg->tree_filter_cfg->testcases->plan_mode
+      ->setting_build_inactive_out = FALSE;
+$tlCfg->tree_filter_cfg->testcases->plan_mode
+      ->setting_build_close_out = FALSE;
 
 
 $tlCfg->tree_filter_cfg->testcases->plan_add_mode->filter_tc_id = ENABLED;
@@ -1870,7 +1886,9 @@ $tlCfg->tree_filter_cfg->testcases->plan_add_mode->filter_custom_fields = ENABLE
 $tlCfg->tree_filter_cfg->testcases->plan_add_mode->advanced_filter_mode_choice = ENABLED;
 $tlCfg->tree_filter_cfg->testcases->plan_add_mode->filter_platforms = ENABLED;
 
-
+$tlCfg->tree_filter_cfg->testcases->plan_add_mode
+      ->filter_aliens = ENABLED;
+      
 $tlCfg->tree_filter_cfg->requirements->filter_doc_id = ENABLED;
 $tlCfg->tree_filter_cfg->requirements->filter_title = ENABLED;
 $tlCfg->tree_filter_cfg->requirements->filter_status = ENABLED;

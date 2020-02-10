@@ -6208,7 +6208,9 @@ class testplan extends tlObjectWithAttachments
    */
   function initGetLinkedForTree($tplanID,$filtersCfg,$optionsCfg) {
     $debugMsg = 'Class:' . __CLASS__ . ' - Method: ' . __FUNCTION__;
-    $dummy = array('exec_type','tc_id','builds','keywords','executions','platforms');
+    $dummy = array('exec_type','tc_id','builds',
+                   'keywords','executions',
+                   'platforms','aliens');
 
     $ic['fields']['tsuites'] = '';
 
@@ -6217,6 +6219,7 @@ class testplan extends tlObjectWithAttachments
     $ic['join']['bugs'] = '';
     $ic['join']['cf'] = '';
     $ic['join']['tsuites'] = '';
+    $ic['join']['aliens'] = '';
 
 
     $ic['where'] = array();
@@ -6224,21 +6227,28 @@ class testplan extends tlObjectWithAttachments
     $ic['where']['platforms'] = '';
     $ic['where']['not_run'] = '';
     $ic['where']['cf'] = '';
+    $ic['where']['aliens'] = '';
 
     $ic['green_light'] = true;
-    $ic['filters'] = array('tcase_id' => null, 'keyword_id' => 0,
-                           'assigned_to' => null, 'exec_status' => null,
-                           'build_id' => 0, 'cf_hash' => null,
+    $ic['filters'] = array('tcase_id' => null, 
+                           'keyword_id' => 0,
+                           'assigned_to' => null, 
+                           'exec_status' => null,
+                           'build_id' => 0, 
+                           'cf_hash' => null,
                            'urgencyImportance' => null, 
                            'tsuites_id' => null,
-                           'platform_id' => null, 'exec_type' => null,
-                           'tcase_name' => null);
+                           'platform_id' => null, 
+                           'exec_type' => null,
+                           'tcase_name' => null,
+                           'alien_id' => null);
 
     $ic['options'] = array('hideTestCases' => 0, 
                            'include_unassigned' => false, 
                            'allow_empty_build' => 0, 
                            'addTSuiteOrder' => false,
-                           'addImportance' => false, 'addPriority' => false);
+                           'addImportance' => false, 
+                           'addPriority' => false);
     $ic['filters'] = array_merge($ic['filters'], (array)$filtersCfg);
     $ic['options'] = array_merge($ic['options'], (array)$optionsCfg);
 
@@ -6253,11 +6263,15 @@ class testplan extends tlObjectWithAttachments
         " ON NH_TSUITE.id = NH_TCASE.parent_id ";
     }  
 
-    // This NEVER HAPPENS for Execution Tree, but if we want to reuse
-    // this method for Tester Assignment Tree, we need to add this check
+    // This NEVER HAPPENS for Execution Tree, 
+    // but if we want to reuse
+    // this method for Tester Assignment Tree, 
+    // we need to add this check
     //
-    if( !is_null($ic['filters']['platform_id']) && $ic['filters']['platform_id'] > 0) {
-      $ic['filters']['platform_id'] = intval($ic['filters']['platform_id']);
+    if( !is_null($ic['filters']['platform_id']) 
+        && $ic['filters']['platform_id'] > 0) {
+      $ic['filters']['platform_id'] = 
+        intval($ic['filters']['platform_id']);
       $ic['where']['platforms'] = " AND TPTCV.platform_id = {$ic['filters']['platform_id']} ";
     }
     
@@ -6297,7 +6311,6 @@ class testplan extends tlObjectWithAttachments
     }
 
     if( !is_null($ic['filters']['keyword_id']) ) {    
-      
       list($ic['join']['keywords'],$ic['where']['keywords']) = 
         $this->helper_keywords_sql($ic['filters']['keyword_id'],array('output' => 'array'));
 
@@ -6305,8 +6318,15 @@ class testplan extends tlObjectWithAttachments
       $ic['where']['where'] .= $ic['where']['keywords']; 
     }
 
-                              
-    // If special user id TL_USER_ANYBODY is present in set of user id,
+    if( isset($ic['filters']['alien_id']) 
+        && !is_null($ic['filters']['alien_id']) ) {    
+      list($ic['join']['aliens'],$ic['where']['aliens']) = 
+       $this->helper_aliens_sql($ic['filters']['alien_id']);
+      $ic['where']['where'] .= $ic['where']['aliens'];
+    }
+
+    // If special user id TL_USER_ANYBODY 
+    // is present in set of user id,
     // we will DO NOT FILTER by user ID
     if( !is_null($ic['filters']['assigned_to']) && 
         !in_array(TL_USER_ANYBODY,(array)$ic['filters']['assigned_to']) ) {  
@@ -6335,7 +6355,8 @@ class testplan extends tlObjectWithAttachments
                                
 
     // Custom fields on testplan_design ONLY => AFFECTS run and NOT RUN.
-    if( isset($ic['filters']['cf_hash']) && !is_null($ic['filters']['cf_hash']) ) {    
+    if( isset($ic['filters']['cf_hash']) 
+        && !is_null($ic['filters']['cf_hash']) ) {    
       $ic['where']['cf'] = ''; 
 
       list($ic['filters']['cf_hash'],$cf_sql) = $this->helperTestPlanDesignCustomFields($ic['filters']['cf_hash']);
@@ -6364,11 +6385,11 @@ class testplan extends tlObjectWithAttachments
     $ic['where']['not_run'] = $ic['where']['where'];
 
 
-    // ************************************************************************
+    // *************************************************************
     // CRITIC - CRITIC - CRITIC 
     // Position on code flow is CRITIC
     // CRITIC - CRITIC - CRITIC 
-    // ************************************************************************
+    // *************************************************************
     if (!is_null($ic['filters']['exec_status'])) {
       // $ic['where']['not_run'] = $ic['where']['where'];
       $dummy = (array)$ic['filters']['exec_status'];
@@ -6385,7 +6406,8 @@ class testplan extends tlObjectWithAttachments
 
     // BUG ID HAS NO EFFECT ON NOT RUN (at least @20140126)
     // bug_id => will be a list to create an IN() clause
-    if( isset($ic['filters']['bug_id']) && !is_null($ic['filters']['bug_id']) ) {    
+    if( isset($ic['filters']['bug_id']) 
+        && !is_null($ic['filters']['bug_id']) ) {    
       list($ic['join']['bugs'],$ic['where']['bugs']) = $this->helper_bugs_sql($ic['filters']['bug_id']);
       $ic['where']['where'] .= $ic['where']['bugs'];
     }
@@ -6546,10 +6568,12 @@ class testplan extends tlObjectWithAttachments
       return null;  
     }
 
-    $buildClause = array('lex' => (' AND EE.build_id = ' . $my['filters']['build_id']), 
-               'exec_join' => (" AND E.build_id = " . $my['filters']['build_id']));
-    if( $my['options']['allow_empty_build'] && $my['filters']['build_id'] <= 0 )
-    {
+    $buildClause = 
+      array('lex' => 
+            (' AND EE.build_id = ' . $my['filters']['build_id']), 
+      'exec_join' => 
+        (" AND E.build_id = " . $my['filters']['build_id']));
+    if( $my['options']['allow_empty_build'] && $my['filters']['build_id'] <= 0 ) {
       $buildClause = array('lex' => '','exec_join' => '');
     }
 
@@ -6562,7 +6586,7 @@ class testplan extends tlObjectWithAttachments
           $buildClause['lex'] .
           " GROUP BY EE.tcversion_id,EE.testplan_id,EE.build_id ";
     
-    // -------------------------------------------------------------------------------------
+    // --------------------------------------------------------
     // adding tcversion on output can be useful for Filter on Custom Field values,
     // because we are saving values at TCVERSION LEVEL
     //  
@@ -6577,6 +6601,7 @@ class testplan extends tlObjectWithAttachments
                  " JOIN {$this->tables['nodes_hierarchy']} NH_TCASE ON NH_TCASE.id = NH_TCV.parent_id " .
               $my['join']['ua'] .
               $my['join']['keywords'] .
+              $my['join']['aliens'] .
               
               " /* Get REALLY NOT RUN => BOTH LE.id AND E.id ON LEFT OUTER see WHERE  */ " .
               " LEFT OUTER JOIN ({$sqlLEX}) AS LEX " .
@@ -6589,8 +6614,9 @@ class testplan extends tlObjectWithAttachments
               " AND E.id = LEX.id " .  // 20120903
                 $buildClause['exec_join'] .
 
-              " WHERE TPTCV.testplan_id =" . $safe['tplan_id'] .
-              $my['where']['where'] .
+              " WHERE TPTCV.testplan_id =" . 
+                $safe['tplan_id'] .
+                $my['where']['where'] .
               " /* Get REALLY NOT RUN => BOTH LE.id AND E.id NULL  */ " .
               " AND E.id IS NULL AND LEX.id IS NULL";
 
@@ -6852,45 +6878,46 @@ class testplan extends tlObjectWithAttachments
   {
     $debugMsg = 'Class: ' . __CLASS__ . ' - Method:' . __FUNCTION__;
     $my = array('filters' => array(),
-                'options' => array('allow_empty_build' => 1,'addPriority' => false,
-                                   'accessKeyType' => 'tcase+platform',
-                                   'addImportance' => false,'addExecInfo' => true,
+                'options' => array('allow_empty_build' => 1,
+                                   'addPriority' => false,
+                                   'accessKeyType' => 
+                                   'tcase+platform',
+                                   'addImportance' => false,
+                                   'addExecInfo' => true,
                                    'assigned_on_build' => null, 
-                                   'ua_user_alias' => '', 'includeNotRun' => true,
+                                   'ua_user_alias' => '', 
+                                   'includeNotRun' => true,
                                    'ua_force_join' => false, 
                                    'orderBy' => null));
     $amk = array('filters','options');
-    foreach($amk as $mk)
-    {
+    foreach($amk as $mk) {
       $my[$mk] = array_merge($my[$mk], (array)$$mk);
     }
 
-    if( !is_null($sql2do = $this->getLinkedTCVersionsSQL($id,$my['filters'],$my['options'])) )
-    {
+    if( !is_null($sql2do = 
+       $this->getLinkedTCVersionsSQL($id,
+                $my['filters'],$my['options'])) ) {
+
       // need to document better
-      if( is_array($sql2do) )
-      {        
+      if( is_array($sql2do) ) {        
         $sql2run = $sql2do['exec'];
-        if($my['options']['includeNotRun'])
-        {
+        if($my['options']['includeNotRun']) {
           $sql2run .= ' UNION ' . $sql2do['not_run'];
         } 
-      }
-      else
-      {
+      } else {
         $sql2run = $sql2do;
       }    
 
       // added when trying to fix: 
-      // TICKET 5788: test case execution order not working on RIGHT PANE
+      // TICKET 5788: test case execution order 
+      // not working on RIGHT PANE
       // Anyway this did not help
-      if( !is_null($my['options']['orderBy']) )
-      {  
-        $sql2run = " SELECT * FROM ($sql2run) XX ORDER BY " . $my['options']['orderBy'];
+      if( !is_null($my['options']['orderBy']) ) {  
+        $sql2run = " SELECT * FROM ($sql2run) XX ORDER BY " 
+                   . $my['options']['orderBy'];
       }
 
-      switch($my['options']['accessKeyType'])
-      {
+      switch($my['options']['accessKeyType']) {
         case 'tcase+platform':
           $tplan_tcases = $this->db->fetchMapRowsIntoMap($sql2run,'tcase_id','platform_id'); // ,0,-1,'user_id');
         break;
@@ -6921,20 +6948,22 @@ class testplan extends tlObjectWithAttachments
    *
    * @parameter map filters
    *            keys:
-   *            'tcase_id','keyword_id','assigned_to','exec_status','build_id', 'cf_hash',
-   *            'urgencyImportance', 'tsuites_id','platform_id', 'exec_type','tcase_name'
-   *            filters defaults values are setted on initGetLinkedForTree()
+   *            'tcase_id','keyword_id','assigned_to',
+   *            'exec_status','build_id', 'cf_hash',
+   *            'urgencyImportance', 'tsuites_id',
+   *            'platform_id', 'exec_type','tcase_name'
+   *            filters defaults values 
+   *            are setted on initGetLinkedForTree()
    *
    * @parameter map options
    *            some defaults are managed here
    *
-   *            defaults for keys: 'hideTestCases','include_unassigned','allow_empty_build'
+   *            defaults for keys:
+   *            'hideTestCases','include_unassigned',
+   *            'allow_empty_build'
    *            are setted on initGetLinkedForTree().
    * 
    *
-   *
-   * @internal revisions
-   * @since 1.9.13
    */
   function getLinkedTCVersionsSQL($id,$filters=null,$options=null)
   {
@@ -6942,33 +6971,39 @@ class testplan extends tlObjectWithAttachments
     $safe['tplan_id'] = intval($id);
     $my = $this->initGetLinkedForTree($safe['tplan_id'],$filters,$options);
     
-
-    $mop = array('options' => array('addExecInfo' => false,'specViewFields' => false, 
-                                    'assigned_on_build' => null, 'testSuiteInfo' => false,
-                                    'addPriority' => false,'addImportance' => false,
-                                    'ignorePlatformAndBuild' => false,
-                                    'ignoreBuild' => false, 'ignorePlatform' => false,
-                                    'ua_user_alias' => '', 'ua_force_join' => false,
-                                    'build_is_active' => false));
+    $mop = array('options' => 
+             array('addExecInfo' => false,
+                   'specViewFields' => false, 
+                   'assigned_on_build' => null, 
+                   'testSuiteInfo' => false,
+                   'addPriority' => false,
+                   'addImportance' => false,
+                   'ignorePlatformAndBuild' => false,
+                   'ignoreBuild' => false, 
+                   'ignorePlatform' => false,
+                   'ua_user_alias' => '', 
+                   'ua_force_join' => false,
+                   'build_is_active' => false));
 
     $my['options'] = array_merge($mop['options'],$my['options']);
       
-    if(  ($my['options']['allow_empty_build'] == 0) && $my['filters']['build_id'] <= 0 )
-    {
+    if(  ($my['options']['allow_empty_build'] == 0) && $my['filters']['build_id'] <= 0 ) {
       // CRASH IMMEDIATELY
       throw new Exception( $debugMsg . " Can NOT WORK with \$my['filters']['build_id'] <= 0");
     }
-    if( !$my['green_light'] ) 
-    {
+
+    if( !$my['green_light'] ) {
       // No query has to be run, because we know in advance that we are
       // going to get NO RECORDS
       return null;  
     }
 
-    $buildClause = array('lex' => (' AND EE.build_id = ' . $my['filters']['build_id']), 
-                         'exec_join' => (" AND E.build_id = " . $my['filters']['build_id']));
-    if( $my['options']['allow_empty_build'] && $my['filters']['build_id'] <= 0 )
-    {
+    $buildClause = array(
+      'lex' => 
+              (' AND EE.build_id = ' . $my['filters']['build_id']), 
+      'exec_join' => 
+              (" AND E.build_id = " . $my['filters']['build_id']));
+    if( $my['options']['allow_empty_build'] && $my['filters']['build_id'] <= 0 ) {
       $buildClause = array('lex' => '','exec_join' => '');
     }
 
@@ -6976,8 +7011,7 @@ class testplan extends tlObjectWithAttachments
     // Before this ticket LEX was just on BUILD => ignoring platforms
     // Need to understand if will create side effects.
     //
-    if($my['options']['ignorePlatformAndBuild'])
-    {
+    if ($my['options']['ignorePlatformAndBuild']) {
       $sqlLEX = " SELECT EE.tcversion_id,EE.testplan_id," .
                 " MAX(EE.id) AS id " .
                 " FROM {$this->tables['executions']} EE " . 
@@ -6987,10 +7021,10 @@ class testplan extends tlObjectWithAttachments
       $platformLEX = " ";
       $platformEXEC = " ";
 
-    }  
-    else if ($my['options']['ignoreBuild'] && $my['options']['build_is_active']) 
-    {
-      $sqlLEX = " SELECT EE.tcversion_id,EE.testplan_id,EE.platform_id," .
+    }  else if ($my['options']['ignoreBuild'] 
+                && $my['options']['build_is_active']) {
+      $sqlLEX = " SELECT EE.tcversion_id,EE.testplan_id,
+                  EE.platform_id," .
                 " MAX(EE.id) AS id " .
                 " FROM {$this->tables['executions']} EE " . 
                 " JOIN {$this->tables['builds']} B " . 
@@ -7001,9 +7035,7 @@ class testplan extends tlObjectWithAttachments
       $platformLEX = " AND LEX.platform_id = TPTCV.platform_id "; 
       $platformEXEC = " AND E.platform_id = TPTCV.platform_id ";
 
-    }
-    else if ($my['options']['ignoreBuild']) 
-    {
+    } else if ($my['options']['ignoreBuild']) {
       $sqlLEX = " SELECT EE.tcversion_id,EE.testplan_id,EE.platform_id," .
                 " MAX(EE.id) AS id " .
                 " FROM {$this->tables['executions']} EE " . 
@@ -7030,8 +7062,9 @@ class testplan extends tlObjectWithAttachments
 
     }  
     
-    // -------------------------------------------------------------------------------------
-    // adding tcversion on output can be useful for Filter on Custom Field values,
+    // -------------------------------------------------------------
+    // adding tcversion on output can be useful 
+    // for Filter on Custom Field values,
     // because we are saving values at TCVERSION LEVEL
     //  
     
@@ -7094,6 +7127,7 @@ class testplan extends tlObjectWithAttachments
                          $my['join']['tsuites'] .
                          $my['join']['ua'] .
                          $my['join']['keywords'] .
+                         $my['join']['aliens'] .
               
                          " LEFT OUTER JOIN {$this->tables['platforms']} PLAT ON PLAT.id = TPTCV.platform_id " .
                          " /* Get REALLY NOT RUN => BOTH LE.id AND E.id ON LEFT OUTER see WHERE  */ " .
@@ -7115,7 +7149,8 @@ class testplan extends tlObjectWithAttachments
                          " AND E.id IS NULL AND LEX.id IS NULL";
           
 
-    $union['exec'] = "/* {$debugMsg} sqlUnion - executions */" . $commonFields . 
+    $union['exec'] = "/* {$debugMsg} sqlUnion - executions */" 
+                     . $commonFields . 
                      " FROM {$this->tables['testplan_tcversions']} TPTCV " .                          
                      " JOIN {$this->tables['tcversions']} TCV ON TCV.id = TPTCV.tcversion_id " .
                      " JOIN {$this->tables['nodes_hierarchy']} NH_TCV ON NH_TCV.id = TPTCV.tcversion_id " .
@@ -7124,6 +7159,7 @@ class testplan extends tlObjectWithAttachments
                      $my['join']['tsuites'] .
                      $my['join']['ua'] .
                      $my['join']['keywords'] .
+                     $my['join']['aliens'] .
              
                      " JOIN ({$sqlLEX}) AS LEX " .
                      " ON  LEX.testplan_id = TPTCV.testplan_id " .
@@ -8061,6 +8097,37 @@ class testplan extends tlObjectWithAttachments
     return is_null($rs) ? $rs : $rs[0]['name'];
   }
   
+
+  /**
+   * 
+   * Based on:
+   *          helper_bugs_sql()
+   *          helper_keywords_sql()
+   *
+   */
+  function helper_aliens_sql($filter)
+  {
+    $sql = array('filter' => '', 'join' => '');
+    $dummy = explode(',',$filter);
+    $items = null;
+    foreach($dummy as $v) {
+      $x = trim($v);
+      if($x != '') {
+        $items[] = $x;
+      }  
+    }  
+
+    if(!is_null($items)) {
+      $sql['filter'] = " AND TAL.alien_id IN ('" 
+                       . implode("','",$items) . "')";            
+      $sql['join'] = 
+        " JOIN {$this->tables['testcase_aliens']} TAL 
+          ON TAL.tcversion_id = NH_TCV.id ";
+    }  
+    return array($sql['join'],$sql['filter']);
+  }
+
+
 } // end class testplan
 
 
@@ -8755,7 +8822,7 @@ class milestone_mgr extends tlObject
       {
         if (($time = strtotime($value)) == -1 || $time === false) 
         {
-          die (__FUNCTION__ . ' Abort - Invalid date');
+          die(__FUNCTION__ . ' Abort - Invalid date');
         }
         $dateFields[]=$varname;  
         $dateValues[]=" '{$this->db->prepare_string($value)}' ";
