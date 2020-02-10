@@ -1210,6 +1210,7 @@ class testcase extends tlObjectWithAttachments {
         $rx[$ik]['blob'] = $oc[$code];
         if (null == $rx[$ik]['blob']) {
           $rx[$ik]['blob'] = new stdClass();
+          $rx[$ik]['blob']->summaryHTMLString = $ohnooo;
           $rx[$ik]['blob']->reportedBy = null;
           $rx[$ik]['blob']->handledBy = null;
           $rx[$ik]['blob']->version = null;

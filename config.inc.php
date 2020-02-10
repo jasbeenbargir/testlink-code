@@ -29,6 +29,7 @@
 
 /** @global array Global configuration class */
 $tlCfg = new stdClass();
+$tlCfg->aliens = new stdClass();
 $tlCfg->api = new stdClass();
 $tlCfg->cookie = new stdClass();
 $tlCfg->document_generator = new stdClass();
@@ -39,6 +40,12 @@ $tlCfg->exec_cfg = new stdClass();
 $tlCfg->exec_cfg->view_mode = new stdClass();
 $tlCfg->exec_cfg->exec_mode = new stdClass();
 
+$tlCfg->aliens
+      ->moreColumns = array('reportedBy',
+                            'version',
+                            'fixedInVersion',
+                            'statusVerbose',
+                            'handledBy');
 
 $tlCfg->UDFStripHTMLTags = true;
 
