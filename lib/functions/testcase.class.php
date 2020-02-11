@@ -1199,39 +1199,7 @@ class testcase extends tlObjectWithAttachments {
     if ($gui->hasIssueTracker = (null != $rs)) {
       $system = new tlIssueTracker($this->db);
       $repo = $system->getInterfaceObject($this->tproject_id);
-      
-      $oc = array();
-      $rx = &$gui->currentVersionAliens; 
-      // $this->buildAlienBlob($gui->currentVersionAliens,$repo);
-
-      $akey = 'alien_id';
-      $ohnooo = "(" . lang_get('reference_not_found') . ")";
-      foreach ($rx as $ik => $el) {
-        $code = trim($el[$akey]);
-        $oc[$code] = $repo->getIssue($code);
-
-        $rx[$ik]['blob'] = $oc[$code];
-        $houstonWeHaveAProblem = false;
-        if (null == $rx[$ik]['blob']) {
-          $houstonWeHaveAProblem = true;
-          $rx[$ik]['blob'] = new stdClass();
-          $rx[$ik]['blob']->summaryHTMLString = $ohnooo;
-        } else if (property_exists($rx[$ik]['blob'], 'exception')) {
-          $houstonWeHaveAProblem = true;
-          $rx[$ik]['blob']->summaryHTMLString = 
-                            $rx[$ik]['blob']->reason;
-        }
-        if ($houstonWeHaveAProblem) {
-          $rx[$ik]['blob']->reportedBy = null;
-          $rx[$ik]['blob']->handledBy = null;
-          $rx[$ik]['blob']->version = null;
-          $rx[$ik]['blob']->fixedInVersion = null;
-          $rx[$ik]['blob']->targetVersion = null;
-          $rx[$ik]['blob']->statusVerbose = null;          
-        }
-
-        $rx[$ik]['name'] = $code;        
-      }
+      $this->buildAlienBlob($gui->currentVersionAliens,$repo);
     }
 
     $smarty->assign('gui',$gui);
@@ -9988,7 +9956,7 @@ class testcase extends tlObjectWithAttachments {
 
       $ufoCrew[$ik]['blob'] = $oc[$code];
       $houstonWeHaveAProblem = false;
-      if (null == $rx[$ik]['blob']) {
+      if (null == $ufoCrew[$ik]['blob']) {
         $houstonWeHaveAProblem = true;
         $ufoCrew[$ik]['blob'] = new stdClass();
         $ufoCrew[$ik]['blob']->summaryHTMLString = $ohnooo;
