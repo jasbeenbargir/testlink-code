@@ -1202,15 +1202,26 @@ class testcase extends tlObjectWithAttachments {
       
       $oc = array();
       $rx = &$gui->currentVersionAliens; 
+      // $this->buildAlienBlob($gui->currentVersionAliens,$repo);
+
       $akey = 'alien_id';
       $ohnooo = "(" . lang_get('reference_not_found') . ")";
       foreach ($rx as $ik => $el) {
-        $code = $el[$akey];
+        $code = trim($el[$akey]);
         $oc[$code] = $repo->getIssue($code);
+
         $rx[$ik]['blob'] = $oc[$code];
+        $houstonWeHaveAProblem = false;
         if (null == $rx[$ik]['blob']) {
+          $houstonWeHaveAProblem = true;
           $rx[$ik]['blob'] = new stdClass();
           $rx[$ik]['blob']->summaryHTMLString = $ohnooo;
+        } else if (property_exists($rx[$ik]['blob'], 'exception')) {
+          $houstonWeHaveAProblem = true;
+          $rx[$ik]['blob']->summaryHTMLString = 
+                            $rx[$ik]['blob']->reason;
+        }
+        if ($houstonWeHaveAProblem) {
           $rx[$ik]['blob']->reportedBy = null;
           $rx[$ik]['blob']->handledBy = null;
           $rx[$ik]['blob']->version = null;
@@ -1218,6 +1229,7 @@ class testcase extends tlObjectWithAttachments {
           $rx[$ik]['blob']->targetVersion = null;
           $rx[$ik]['blob']->statusVerbose = null;          
         }
+
         $rx[$ik]['name'] = $code;        
       }
     }
@@ -9960,6 +9972,42 @@ class testcase extends tlObjectWithAttachments {
   function getAliensByIdCard($idCard) {
     return $this->getAliens($idCard['tcase_id'],
                             $idCard['tcversion_id']);
+  }
+
+  /**
+   *
+   */
+  function buildAlienBlob(&$ufoCrew,&$repo)
+  {
+    $oc = array();
+    $akey = 'alien_id';
+    $ohnooo = "(" . lang_get('reference_not_found') . ")";
+    foreach ($ufoCrew as $ik => $el) {
+      $code = trim($el[$akey]);
+      $oc[$code] = $repo->getIssue($code);
+
+      $ufoCrew[$ik]['blob'] = $oc[$code];
+      $houstonWeHaveAProblem = false;
+      if (null == $rx[$ik]['blob']) {
+        $houstonWeHaveAProblem = true;
+        $ufoCrew[$ik]['blob'] = new stdClass();
+        $ufoCrew[$ik]['blob']->summaryHTMLString = $ohnooo;
+      } else if (property_exists($ufoCrew[$ik]['blob'], 
+                                 'exception')) {
+        $houstonWeHaveAProblem = true;
+        $ufoCrew[$ik]['blob']
+          ->summaryHTMLString = $ufoCrew[$ik]['blob']->reason;
+      }
+      if ($houstonWeHaveAProblem) {
+        $ufoCrew[$ik]['blob']->reportedBy = null;
+        $ufoCrew[$ik]['blob']->handledBy = null;
+        $ufoCrew[$ik]['blob']->version = null;
+        $ufoCrew[$ik]['blob']->fixedInVersion = null;
+        $ufoCrew[$ik]['blob']->targetVersion = null;
+        $ufoCrew[$ik]['blob']->statusVerbose = null;          
+      }
+      $ufoCrew[$ik]['name'] = $code;        
+    }
   }
 
 

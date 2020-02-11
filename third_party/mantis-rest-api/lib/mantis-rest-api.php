@@ -123,18 +123,28 @@ class mantis {
     curl_setopt_array($this->curl,$curlCfg);
   }
 
+function isValidJSON($string) {
+    json_decode($string);
+    return (json_last_error() == JSON_ERROR_NONE);
+}
+
   /**
    * 
    *
    */
   function getIssue($issueID) {
     try {
-      $item = $this->_get("/api/rest/issues/{$issueID}");    
+      $item = $this->_get("/api/rest/issues/{$issueID}");  
       $ret = is_object($item) ? $item : null;
       return $ret;
     }
     catch(Exception $e) {
-      return null;
+      tLog(__METHOD__ . '/' . $e->getMessage(),'ERROR');
+
+      $exu = new stdClass();
+      $exu->exception = true;
+      $exu->reason = $e->getMessage();
+      return $exu;
     }
   } 
 
@@ -297,8 +307,23 @@ class mantis {
   protected function _request_json($method, $url, $body = NULL, $ignore_status = 0,$reporter=null) {
     $r = $this->_request($method, $url, $body, $ignore_status,$reporter);
     $response = $r['response'];
-    $content = $r['content'];
-    return ($content != '' ? json_decode($content) : null);
+    $r['content'] = trim($r['content']);
+    $content = json_decode($r['content']);
+    if (json_last_error() == JSON_ERROR_NONE) {
+      return $content;
+    }
+    
+    tLog(__METHOD__ . '/Content:' 
+         . $r['content'],'ERROR');
+
+    $msg = 'Bad Response!!';
+    if (null != $response && isset($response['http_code'])) {
+      $msg = "http_code:" . $response['http_code'];
+    }
+    $msg = "Error Parsing JSON -> " . $msg . 
+           " -> Give a look to TestLink Event Viewer";
+
+    throw new Exception($msg, 1);
   }
   
  /** 
@@ -353,6 +378,7 @@ class mantis {
     $content = curl_exec($this->curl);
     $response = curl_getinfo($this->curl);
     $curlError =  curl_error($this->curl);
+
     $httpCode = (int)$response['http_code'];
     if ($httpCode != 200 && $httpCode != 201 && $httpCode != $ignoreStatusCode) 
     {
@@ -360,7 +386,10 @@ class mantis {
                           json_encode($response) . ' - content: ' . json_encode($content) );
     }
     
-    $rr = ['content' => $content,'response' => $response,'curlError' => $curlError];
+    $rr = ['content' => $content,
+           'response' => $response,
+           'curlError' => $curlError];
+    
     return $rr;
   }
   

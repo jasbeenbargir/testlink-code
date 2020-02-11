@@ -176,13 +176,22 @@ class mantisrestInterface extends issueTrackerInterface {
     $issue = null;
     try {
       $jsonObj = $this->APIClient->getIssue($issueID);
- 
+
       if( !is_null($jsonObj) && is_object($jsonObj)) {
-        $item = $jsonObj->issues;
-        $item = $item[0];
 
         $issue = new stdClass();
         $issue->IDHTMLString = "<b>{$issueID} : </b>";
+  
+        if (property_exists($jsonObj,'exception')) {
+          $issue->summary = (string)$jsonObj->reason;
+          $issue->summaryHTMLString = $issue->summary;          
+          return $issue;
+        }
+
+        // Normal processing
+        $item = $jsonObj->issues;
+        $item = $item[0];
+
         $issue->statusCode = intval($item->status->id);
         $issue->statusVerbose = (string)$item->status->label;
         $issue->statusHTMLString = "[{$issue->statusVerbose}]";
