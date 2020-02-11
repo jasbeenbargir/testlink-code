@@ -430,27 +430,7 @@ if(!is_null($linked_tcversions)) {
 
       if(!is_null($its)) {
         $gui->aliens = $tcase_mgr->getAliensByIdCard($idCard);
-        $oc = array();
-        $rx = &$gui->aliens; 
-        $akey = 'alien_id';
-        $ohnooo = "(" . lang_get('reference_not_found') . ")";
-        foreach ($rx as $ik => $el) {
-          $code = $el[$akey];
-          $oc[$code] = $its->getIssue($code);
-
-          $rx[$ik]['blob'] = $oc[$code];
-          if (null == $rx[$ik]['blob']) {
-            $rx[$ik]['blob'] = new stdClass();
-            $rx[$ik]['blob']->summaryHTMLString = $ohnooo;
-            $rx[$ik]['blob']->reportedBy = null;
-            $rx[$ik]['blob']->handledBy = null;
-            $rx[$ik]['blob']->version = null;
-            $rx[$ik]['blob']->fixedInVersion = null;
-            $rx[$ik]['blob']->targetVersion = null;
-            $rx[$ik]['blob']->statusVerbose = null;          
-          }
-          $rx[$ik]['name'] = $code;        
-        }
+        $tcase_mgr->buildAlienBlob($gui->aliens,$its);
       }
 
       if(!is_null($cts)) {
