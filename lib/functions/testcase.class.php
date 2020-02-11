@@ -1168,7 +1168,8 @@ class testcase extends tlObjectWithAttachments {
               $this->getPlatforms($version['testcase_id'],$version['id']);
 
             $gui->otherVersionsAliens[] = 
-              $this->getAliens($version['testcase_id'],$version['id']);
+              $this->getAliens($version['testcase_id'],
+                               $version['id']);
 
           }
         } // Other versions exist
@@ -1200,6 +1201,13 @@ class testcase extends tlObjectWithAttachments {
       $system = new tlIssueTracker($this->db);
       $repo = $system->getInterfaceObject($this->tproject_id);
       $this->buildAlienBlob($gui->currentVersionAliens,$repo);
+
+      if ($gui->otherVersionsAliens != null) {
+        foreach ($gui->otherVersionsAliens as $zzx => $elem) {
+          $this->buildAlienBlob($gui->otherVersionsAliens[$zzx],
+                                $repo);
+        }
+      }
     }
 
     $smarty->assign('gui',$gui);
@@ -2168,6 +2176,8 @@ class testcase extends tlObjectWithAttachments {
     $this->copyTCVRelations($source['version_id'],$dest['version_id']);
 
     $this->copyPlatformsTo($source,$dest,null,$auditContext,array('delete' => false));
+
+    $this->copyAliensTo($source,$dest,$auditContext);
 
 
     if( $this->cfg->testcase->relations->enable && 
@@ -9947,14 +9957,16 @@ class testcase extends tlObjectWithAttachments {
    */
   function buildAlienBlob(&$ufoCrew,&$repo)
   {
-    $oc = array();
+    static $oCache = array();
+
     $akey = 'alien_id';
     $ohnooo = "(" . lang_get('reference_not_found') . ")";
     foreach ($ufoCrew as $ik => $el) {
       $code = trim($el[$akey]);
-      $oc[$code] = $repo->getIssue($code);
-
-      $ufoCrew[$ik]['blob'] = $oc[$code];
+      if (!isset($oCache[$code])) {
+        $oCache[$code] = $repo->getIssue($code);
+      }
+      $ufoCrew[$ik]['blob'] = $oCache[$code];
       $houstonWeHaveAProblem = false;
       if (null == $ufoCrew[$ik]['blob']) {
         $houstonWeHaveAProblem = true;
@@ -9976,6 +9988,36 @@ class testcase extends tlObjectWithAttachments {
       }
       $ufoCrew[$ik]['name'] = $code;        
     }
+  }
+
+  /**
+   *
+   */
+  function copyAliensTo($source,$dest,$auditContext=null,
+                        $opt=null) 
+  {
+
+    $adt = array('on' => self::AUDIT_ON);
+    if( isset($dest['version']) ) {
+      $adt['version'] = $dest['version'];
+    }
+    $adt = array_merge($adt,(array)$auditContext);
+
+    $what = array('delete' => true);
+    $what = array_merge($what,(array)$opt);
+
+    $sourceIT = $this->getAliens($source['id'],
+                                 $source['version_id']);
+    if( !is_null($sourceIT) ) {
+      $itSet = array_keys($sourceIT);
+      $cedula = new stdClass();
+      $cedula->tproject_id = $this->tproject_id;
+      $cedula->tcase_id = $dest['id'];
+      $cedula->tcversion_id = $dest['version_id'];
+      $this->addAliens($cedula,$itSet,$adt);
+    }
+
+    return true;
   }
 
 
